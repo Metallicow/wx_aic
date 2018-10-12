@@ -4,7 +4,7 @@ from .utilities import dc_to_bitmap
 
 class ImageControlFrame(wx.Frame):
     """
-    A sub-classed Frame that presents a background image, which can be tiled if requested
+    Build a Frame with a background image, tiling the image if requested
     If an image with an alpha value is used, the frame's BackgroundColour will show through
     """
 

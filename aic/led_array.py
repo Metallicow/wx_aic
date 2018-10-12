@@ -1,0 +1,127 @@
+import wx
+from aic import ActiveImageControl, dc_to_bitmap
+
+
+class LedArray(ActiveImageControl):
+    """
+    An Active Image Control for presenting an array of two state (On / OFF) LED indicators,
+    The bitmaps can be transparency masks or opaque
+    If masks are used, set bg_colour for the colour you want for the LED
+    :param bitmaps: An iterable containing two equal sized wx.Bitmap objects
+                    The  bitmap in (0) position represents the OFF state
+                    The  bitmap in (1) position represents the ON state
+    :param colour_list: an iterable of wx.colour objects - one for each element in the array
+                        (ie for six LED elements, supply six colour objects)
+    """
+
+    def __init__(self, parent, bitmaps, colours=(wx.GREEN,), *args, **kwargs):
+        super().__init__(parent, *args, **kwargs)
+
+        self.SetWindowStyleFlag(wx.NO_BORDER)
+
+        self.parent = parent
+        self.bmp_pair = bitmaps
+        self.colours = colours
+        self.vertical = True
+        self.reversed = False
+        self.bg_colour = wx.GREEN
+        self.colour_shrink = 0  # reduce the rectangle on the back-painted solid colour (if used)
+        self.stat_bmp = self.bmp_pair[0]
+        self.stat_size = self.stat_bmp.Size
+        self.elements = len(self.colours)
+        self.spacing = 1
+        self.stat_padding = (0, 0)
+        self.stat_position = self.GetPosition() + self.stat_padding
+        self._state = 0
+
+        self.SetBackgroundStyle(wx.BG_STYLE_PAINT)
+        self.Bind(wx.EVT_PAINT, self.on_paint)
+        self.Bind(wx.EVT_ENTER_WINDOW, lambda e: None)  # we can pass on this event
+        self.Bind(wx.EVT_LEAVE_WINDOW, lambda e: None)  # ""
+
+        # Class overrides #
+
+    def DoGetBestSize(self):
+        w, h = self.stat_size
+        pad_x, pad_y = self.stat_padding
+        spacing = self.spacing
+        if self.vertical:
+            size = wx.Size(w + pad_x * 2, ((h + spacing) * self.elements) - spacing + (pad_y * 2))  # for vertical
+        else:
+            size = wx.Size(((w + spacing) * self.elements) - spacing + pad_x * 2, h + pad_y * 2)  # for horizontal
+        return size
+
+    def AcceptsFocusFromKeyboard(self):
+        """ Overridden base class """
+        # We don't want focus from keyboard
+        return False
+
+    def AcceptsFocus(self):
+        """ Overridden base class """
+        # We don't want focus from the mouse either
+        return False
+
+    # Event Handling #
+    def on_paint(self, _):
+        # TODO totally revise this code - return to method used in other led objects (ie don't bother using memorydc)
+        window_rect = self.GetRect()
+        buffer_bitmap = self.parent.bg_render.GetSubBitmap(window_rect)
+        context = wx.MemoryDC(buffer_bitmap)
+        # context = wx.BufferedPaintDC(self, buffer_bitmap)
+
+        bmm = self.paint_array(context)
+        dc = wx.BufferedPaintDC(self, buffer_bitmap)
+        dc.DrawBitmap(bmm, 0, 0)
+
+    # Instance methods #
+    def paint_array(self, context):
+        # try:
+        #     dc = wx.GCDC(context)
+        # except NotImplementedError:
+        #     dc = context
+
+        dc = context
+
+        w, h = self.stat_size
+        px, py = self.stat_padding
+
+        for index, colour in enumerate(self.colours):
+            if self.reversed:
+                pen_col = brush_col = colour
+            else:
+                pen_col = brush_col = self.colours[-1 - index]
+
+            dc.SetPen(wx.Pen(pen_col, width=1))
+            dc.SetBrush(wx.Brush(brush_col))
+            if self.vertical:
+                sx, sy = (0, index * (h + self.spacing))  # vertical
+            else:
+                sx, sy = (index * (w + self.spacing), 0)  # horizontal
+            x = px + sx
+            y = py + sy
+            rect = wx.Rect(x, y, w, h)
+
+            # using Deflate to correct for the extra line width added by DrawRectangle
+            dc.DrawRectangle(rect.Deflate(self.colour_shrink))
+            if self.reversed:
+                dc.DrawBitmap(self.bmp_pair[self.value > index], x, y)
+            else:
+                dc.DrawBitmap(self.bmp_pair[self.value >= len(self.colours) - index], x, y)
+        bob = dc_to_bitmap(self, dc)
+        # save_bmp_to_file(bob, 'bbits.png', filetype=wx.BITMAP_TYPE_PNG)
+        return bob
+
+    # Getters and Setters #
+    def set_padding(self, padding):
+        self.stat_padding = padding
+
+    # Properties #
+    @property
+    def value(self):
+        return self._state
+
+    @value.setter
+    def value(self, state):
+        if state != self._state:
+            self._state = state
+            self.parent.Refresh(True, self.GetRect())  # Refreshes the underlying portion of the background panel

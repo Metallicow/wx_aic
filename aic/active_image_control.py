@@ -26,6 +26,7 @@ class ActiveImageControl(wx.Control):
     #     self.resizing = True
     #     event.Skip()
 
+    # TODO I think this method can be replaced with just 'angle % 360' in calling code
     @staticmethod
     def _parse_angle(angle):
         """ returns angle(float) in range(0,360) """
