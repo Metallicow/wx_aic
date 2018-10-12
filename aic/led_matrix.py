@@ -8,6 +8,7 @@ class LedMatrix(ActiveImageControl):
     An Active Image Control for presenting a matrix of two state (On / OFF) LED indicators
     The bitmaps can be transparency masks or opaque
     If masks are used, set bg_colour for the colour you want for the LEDs
+
     :param bitmaps: An iterable containing two equally dimensioned wx.Bitmap objects
                     The  bitmap in (0) position represents the OFF state
                     The  bitmap in (1) position represents the ON state
