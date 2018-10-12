@@ -6,7 +6,7 @@ __all__ = ['dc_to_bitmap', 'save_bmp_to_file']
 
 
 def save_bmp_to_file(bmp, filepath, filetype=wx.BITMAP_TYPE_PNG):
-    """ Helper method to save a copy of a bitmap to file; primarily for debugging / testing """
+    """ Helper method to save a bitmap to file; primarily for debugging / testing """
     img = bmp.ConvertToImage()
     img.SaveFile(filepath, filetype)
 
