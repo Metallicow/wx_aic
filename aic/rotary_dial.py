@@ -91,7 +91,7 @@ class RotaryDial(ActiveImageControl):
         dc.DrawBitmap(indicator, self._dynam_pos)
 
         if self.highlight and self.HasFocus():
-            self.draw_highlight(dc, self.highlight_box)
+            self.draw_highlight(dc, self._stat_size, self.highlight_box)
 
     def on_keypress(self, event):
         if self.HasFocus():

@@ -8,7 +8,7 @@ class Padding:
                     (10,20)     Top and bottom are padded 10px; Right and left are padded 20px
                     (10,5,20)   Top padding 10px; right and left are 5px; bottom padding is 20px
                     (5,10,15,8) Top padding 5px; right 10px; bottom 15px; left 8px
-                                Top; Right; Bottom; Left - mimics the familiar CSS pattern
+                                Top; Right; Bottom; Left - mimics the common CSS pattern
     """
 
     def __init__(self, widths: tuple = (0, 0, 0, 0)):

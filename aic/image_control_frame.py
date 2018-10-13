@@ -8,18 +8,22 @@ class ImageControlFrame(wx.Frame):
     If an image with an alpha value is used, the frame's BackgroundColour will show through
     """
 
-    def __init__(self, parent, *args, **kwargs):
+    def __init__(self, parent, bitmap=wx.EmptyBitmap, tiled=False, resizable=True, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
-        self.SetBackgroundColour(wx.BLACK)
 
-        self._bg_bitmap = wx.EmptyBitmap
+        if not resizable:
+            self.SetWindowStyle(wx.DEFAULT_FRAME_STYLE & ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX))
+
+        self.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
+        self._bg_bitmap = wx.Bitmap(bitmap)
         self._bg_width = 0
         self._bg_height = 0
-        self.tiled_bg = False
-        self._bg_render = self._bg_bitmap
-
+        self._bg_render = wx.EmptyBitmap
+        self._tiled_bg = tiled
         # Setting to True is only useful if you are drawing other objects directly onto the Frame - ie. not using Panels
         self.store_render = False
+
+        self.set_background(self._bg_bitmap, tiled)
 
         self.Bind(wx.EVT_ERASE_BACKGROUND, self._on_erase_background)
         self.SetBackgroundStyle(wx.BG_STYLE_PAINT)
@@ -32,10 +36,9 @@ class ImageControlFrame(wx.Frame):
         x, y = 0, 0
         w, h = self.GetSize()
 
-        # Using Auto/BufferedPaintDC prevents corruption
         dc = wx.AutoBufferedPaintDC(self)
 
-        # Draw a background rectangle to prevent corruption, when using images that have transparency
+        # Draw a background rectangle to prevent corruption when using images that have transparency
         if self._bg_bitmap.ConvertToImage().HasAlpha():
             brush = dc.GetBrush()
             brush.SetColour(dc.GetTextBackground())
@@ -43,10 +46,10 @@ class ImageControlFrame(wx.Frame):
             dc.DrawRectangle(x, y, w, h)
 
         # If client size has changed, draw the bg_bitmap, tiling the bitmap if requested
-        # If size is unchanged, draw the background using self.bg_render.
+        # If size is unchanged, draw the stored background (self.bg_render)
         if self._bg_render.GetSize() != self.GetClientSize():
 
-            if self.tiled_bg:
+            if self._tiled_bg:
                 # Tiled bitmap drawn to Frame
                 columns = (w // self._bg_width) + 1
                 rows = (h // self._bg_height) + 1
@@ -68,8 +71,8 @@ class ImageControlFrame(wx.Frame):
             # Draw the previously saved bitmap to Frame
             dc.DrawBitmap(self._bg_render, x, y)
 
-    def set_background(self, bg_bitmap, tiled=False, stored=False):
-        self._bg_bitmap = bg_bitmap
+    def set_background(self, bitmap, tiled=False, stored=False):
+        self._bg_bitmap = bitmap
         self._bg_width = self._bg_bitmap.Size.width
         self._bg_height = self._bg_bitmap.Size.height
         self._bg_render = self._bg_bitmap
@@ -77,7 +80,7 @@ class ImageControlFrame(wx.Frame):
         self.set_stored(stored)
 
     def set_tiled(self, tiled=True):
-        self.tiled_bg = tiled
+        self._tiled_bg = tiled
 
     def set_stored(self, stored=True):
         self.store_render = stored

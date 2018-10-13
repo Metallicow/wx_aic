@@ -8,4 +8,5 @@ from .led_array import LedArray
 from .led_matrix import LedMatrix
 from .toggle_switch import ToggleSwitch
 from .moment_switch import MomentSwitch
+from .rotary_dial import RotaryDial
 from .utilities import dc_to_bitmap, save_bmp_to_file
