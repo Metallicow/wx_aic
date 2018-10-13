@@ -20,15 +20,6 @@ class ActiveImageControl(wx.Control):
         self.Refresh()
         event.Skip()
 
-    # TODO I think this method can be replaced with just 'angle % 360' in calling code
-    @staticmethod
-    def _parse_angle(angle):
-        """ returns angle(float) in range(0,360) """
-        if angle < 0:
-            return 360 - abs(angle) % 360
-        else:
-            return angle % 360
-
     # TODO make highlight an object that can be attached to any window, each with it's own parameters
     def draw_highlight(self, context, size, adjustment):
         """ Draw a highlighting square around the control """

@@ -247,6 +247,11 @@ class RotaryDial(ActiveImageControl):
             self._pointer_limit_hit = None
         return parsed_angle
 
+    # TODO I think this method can be replaced with just 'angle % 360' in calling code
+    @staticmethod
+    def _parse_angle(angle, limit=360):
+        return angle % limit
+
     @staticmethod
     def rotate_bmp(bmp, deg):
         radian = radians(deg)
@@ -258,7 +263,6 @@ class RotaryDial(ActiveImageControl):
         rot_sub_img = rot_img.GetSubImage((wx.Rect(offset, img.GetSize())))
         rot_sub_bmp = rot_sub_img.ConvertToBitmap()
         return rot_sub_bmp
-
 
 
 def angle_diff(point, origin):

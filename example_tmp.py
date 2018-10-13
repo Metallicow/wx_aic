@@ -28,7 +28,7 @@ class ICPanel(ImageControlPanel):
         dial_pair = (
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_knob1.png')),
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_knob1_mark.png')))
-        self.dial = RotaryDial(self, dial_pair, style=wx.WANTS_CHARS)  # TODO wantchars should be in the dial class?
+        self.dial = RotaryDial(self, dial_pair)
         self.dial.set_padding((10, 10))
         self.dial.highlight_box = ((10,10), (3,3))
         self.dial.set_rotation_point_offset((-1, 0))
