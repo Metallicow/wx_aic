@@ -35,8 +35,8 @@ class ActiveImageControl(wx.Control):
             # ((40, 255, 40, 28), 2, (0, 0), self.Rect.Deflate(sizing), 8),
             # ((35, 142, 35, 10), 3, (1, 1), self.Rect.Deflate(sizing[0] + 1, sizing[1] + 1), 8),
             # ((0, 22, 0, 88), 1, (2, 2), self.Rect.Deflate(sizing[0] + 2, sizing[1] + 2), 8)
-            ((c_r, c_g, c_b, c_a - 155), 1, (0, 0), wx.Rect((0, 0), size).Deflate(sizing), 4),
-            ((c_r, c_g, c_b, c_a - 200), 1, (1, 1), wx.Rect((0, 0), size).Deflate(sizing[0] + 1, sizing[1] + 1), 4)
+            ((c_r, c_g, c_b, c_a - 200), 1, (0, 0), wx.Rect((0, 0), size).Deflate(sizing), 4),
+            ((c_r, c_g, c_b, c_a - 220), 1, (1, 1), wx.Rect((0, 0), size).Deflate(sizing[0] + 1, sizing[1] + 1), 4)
         ]:
             r, g, b, a = RGBA
             pen_col = wx.Colour(r, g, b, a)

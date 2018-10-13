@@ -22,13 +22,7 @@ class ToggleSwitch(ActiveImageControl):
         self.bmp_pair = bitmaps
         self.stat_bmp = self.bmp_pair[0]
         self.stat_size = self.stat_bmp.Size
-        # self.stat_width = self.stat_size.width
-        # self.stat_height = self.stat_size.height
-        # self.stat_centre = rect_centre(self.bmp_pair[0].Size)
-        # self.stat_centre_offset = (0, 0)
         self.stat_padding = (0, 0)
-        # self.stat_position = self.GetPosition() + self.stat_padding
-        # self.stat_rect = wx.Rect(self.stat_position, self.stat_size)
 
         self._state = False
 
@@ -51,12 +45,6 @@ class ToggleSwitch(ActiveImageControl):
         return size
 
     # Event Handling #
-
-    # def on_cust_event(self, event):
-    #     print(f'{self} saw the custom event{event}')
-    #     print(f'window id {event.Id} says that state = {event.state}')
-    #     event.Skip()
-
     def on_paint(self, _):
         window_rect = self.GetRect()
         buffer_bitmap = self.parent.bg_render.GetSubBitmap(window_rect)

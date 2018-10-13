@@ -30,7 +30,6 @@ class ICPanel(ImageControlPanel):
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_knob1_mark.png')))
         self.dial = RotaryDial(self, dial_pair)
         self.dial.set_padding((10, 10))
-        self.dial.highlight_box = ((10,10), (3,3))
         self.dial.set_rotation_point_offset((-1, 0))
         self.dial.set_zero_angle_offset(-225)
         self.dial.set_pointer_rot_offset(-135)
@@ -38,6 +37,7 @@ class ICPanel(ImageControlPanel):
         self.dial.set_max_angle(270)
         self.dial.set_step(2, 4)
         self.dial.set_highlighting()
+        self.dial.highlight_box = ((10,10), (-1,-1))
         mid_sizer.Add(self.dial,0,0, 10)
 
         mid_sizer.Add((0, 0), 1, wx.EXPAND, 5)
@@ -73,6 +73,23 @@ class StdPanel(wx.Panel):
         top_sizer.Add((0, 0), 1, wx.EXPAND, 5)
         mid_sizer = wx.BoxSizer(wx.HORIZONTAL)
         mid_sizer.Add((0, 0), 1, wx.EXPAND, 5)
+
+        # Add a rotary dial control #
+        dial_pair = (
+            wx.Bitmap(os.path.join(RESOURCES, 'sticky_knob1.png')),
+            wx.Bitmap(os.path.join(RESOURCES, 'sticky_knob1_mark.png')))
+        self.dial = RotaryDial(self, dial_pair)
+        self.dial.set_padding((10, 10))
+        self.dial.set_rotation_point_offset((-1, 0))
+        self.dial.set_zero_angle_offset(-225)
+        self.dial.set_pointer_rot_offset(-135)
+        self.dial.set_initial_angle(0)
+        self.dial.set_max_angle(270)
+        self.dial.set_step(2, 4)
+        self.dial.set_highlighting()
+        self.dial.highlight_box = ((10,10), (3,3))
+        mid_sizer.Add(self.dial,0,0, 10)
+
         mid_sizer.Add((0, 0), 1, wx.EXPAND, 5)
         bot_sizer = wx.BoxSizer(wx.HORIZONTAL)
         bot_sizer.Add((0, 0), 1, wx.EXPAND, 5)
