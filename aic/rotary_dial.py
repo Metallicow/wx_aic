@@ -247,7 +247,6 @@ class RotaryDial(ActiveImageControl):
             self._pointer_limit_hit = None
         return parsed_angle
 
-    # TODO I think this method can be replaced with just 'angle % 360' in calling code
     @staticmethod
     def _parse_angle(angle, limit=360):
         return angle % limit
