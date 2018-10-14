@@ -41,7 +41,7 @@ class SingleSlider(ActiveImageControl):
         # self.stat_rect = wx.Rect(self.stat_position, self.stat_size)   # not needed?
 
         self.stat_cntr_pnt_offset = (0, 0)  # the offset for the centre point that dynam_bmp will move along
-        self.stat_cntr_pnt_centre = (self._stat_position + self._stat_centre + self.stat_rot_pnt_offset)
+        self.stat_cntr_pnt_centre = (self._stat_position + self._stat_centre + self.stat_cntr_pnt_offset)
 
         self.dynam_bmp = bitmaps[1]
         self._dynam_size = self.dynam_bmp.Size
@@ -206,7 +206,7 @@ class SingleSlider(ActiveImageControl):
     def _update_params(self):
         self._stat_position = self.GetPosition() + self.stat_padding
         # self.stat_rect = wx.Rect(self._stat_position, self._stat_size)  # not needed?
-        self.stat_cntr_pnt_centre = (self._stat_position + self._stat_centre + self.stat_rot_pnt_offset)
+        self.stat_cntr_pnt_centre = (self._stat_position + self._stat_centre + self.stat_cntr_pnt_offset)
         self._dynam_pos = self.stat_cntr_pnt_centre - self._dynam_centre
 
     def _refresh(self):

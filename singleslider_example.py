@@ -30,8 +30,8 @@ class ICPanel(ImageControlPanel):
 
         # Add a rotary dial control #
         slider_pair = (
-            wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide_bg.png')),
-            wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide_handle.png')))
+            wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1.png')),
+            wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1_handle.png')))
         self.dial = SingleSlider(self, slider_pair)
         self.dial.set_padding((10, 10))
         self.dial.set_rotation_point_offset((-1, 0))
