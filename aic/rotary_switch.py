@@ -7,7 +7,7 @@ import pytweening as ptw
 
 from aic import ActiveImageControl
 
-rd_cmd_event, EVT_RD_CHANGE = NewCommandEvent()
+rs_cmd_event, EVT_RS_CHANGE = NewCommandEvent()
 
 
 class RotarySwitch(ActiveImageControl):

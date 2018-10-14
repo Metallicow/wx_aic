@@ -7,7 +7,7 @@ import pytweening as ptw
 
 from aic import ActiveImageControl
 
-rd_cmd_event, EVT_RD_CHANGE = NewCommandEvent()
+ss_cmd_event, EVT_SS_CHANGE = NewCommandEvent()
 
 
 class SingleSlider(ActiveImageControl):
@@ -36,22 +36,22 @@ class SingleSlider(ActiveImageControl):
         # self.stat_width = self.stat_bmp.Size.width   # not needed?
         # self.stat_height = self.stat_bmp.Size.height   # not needed?
         self._stat_centre = rect_centre(self._stat_size)
-        self.stat_padding = (0, 0)
+        self.stat_padding = (10, 10)
         self._stat_position = self.GetPosition() + self.stat_padding
         # self.stat_rect = wx.Rect(self.stat_position, self.stat_size)   # not needed?
 
-        self.stat_rot_pnt_offset = (0, 0)  # the offset for the centre point that dynam_bmp will rotate around
-        self.stat_rot_pnt_centre = (self._stat_position + self._stat_centre + self.stat_rot_pnt_offset)
+        self.stat_cntr_pnt_offset = (0, 0)  # the offset for the centre point that dynam_bmp will move along
+        self.stat_cntr_pnt_centre = (self._stat_position + self._stat_centre + self.stat_rot_pnt_offset)
 
         self.dynam_bmp = bitmaps[1]
         self._dynam_size = self.dynam_bmp.Size
         self._dynam_centre = rect_centre(self._dynam_size)
-        self._dynam_pos = self.stat_rot_pnt_centre - self._dynam_centre
+        self._dynam_pos = self.stat_cntr_pnt_centre - self._dynam_centre
         # degrees rotation to make pointer align with minimum position (-ve for counter-clockwise; +ve for clockwise)
-        self._dynam_bmp_rot_offset = -135
+        # self._dynam_bmp_rot_offset = -135
 
         # degrees of rotation from the 3 o'clock position to the minimum limit of the dial ie (the zero position)
-        self._zero_angle_offset = 0
+        # self._zero_angle_offset = 0
         self._scroll_step = 1
         self._key_step = 1
         self.pointer_default = 0
@@ -110,7 +110,7 @@ class SingleSlider(ActiveImageControl):
         if not self.HasFocus():
             self.SetFocus()
         mouse_pos = event.GetPosition()
-        mouse_angle = angle_diff(mouse_pos, self.stat_rot_pnt_centre)
+        mouse_angle = angle_diff(mouse_pos, self.stat_cntr_pnt_centre)
         mouse_angle_offset = mouse_angle - self._zero_angle_offset
         self.set_angle(mouse_angle_offset)
 
@@ -119,7 +119,7 @@ class SingleSlider(ActiveImageControl):
             if not self.HasFocus():
                 self.SetFocus()
             mouse_pos = event.GetPosition()
-            mouse_angle = angle_diff(mouse_pos, self.stat_rot_pnt_centre)
+            mouse_angle = angle_diff(mouse_pos, self.stat_cntr_pnt_centre)
             mouse_angle_offset = mouse_angle - self._zero_angle_offset
             self.set_angle(mouse_angle_offset)
         event.Skip()
@@ -187,7 +187,7 @@ class SingleSlider(ActiveImageControl):
         angle_ = self._parse_angle(angle)
         if angle != self._pointer_angle:
             self._pointer_angle = self._parse_limits(angle_, self.pointer_max_angle)
-            wx.PostEvent(self, rd_cmd_event(id=self.GetId(), state=self._pointer_angle))
+            wx.PostEvent(self, ss_cmd_event(id=self.GetId(), state=self._pointer_angle))
             self._refresh()
 
     def reset(self, animate=True):
@@ -206,8 +206,8 @@ class SingleSlider(ActiveImageControl):
     def _update_params(self):
         self._stat_position = self.GetPosition() + self.stat_padding
         # self.stat_rect = wx.Rect(self._stat_position, self._stat_size)  # not needed?
-        self.stat_rot_pnt_centre = (self._stat_position + self._stat_centre + self.stat_rot_pnt_offset)
-        self._dynam_pos = self.stat_rot_pnt_centre - self._dynam_centre
+        self.stat_cntr_pnt_centre = (self._stat_position + self._stat_centre + self.stat_rot_pnt_offset)
+        self._dynam_pos = self.stat_cntr_pnt_centre - self._dynam_centre
 
     def _refresh(self):
         self.Refresh(True, (wx.Rect(self._dynam_pos, self._dynam_size)))
@@ -262,16 +262,6 @@ class SingleSlider(ActiveImageControl):
         rot_sub_img = rot_img.GetSubImage((wx.Rect(offset, img.GetSize())))
         rot_sub_bmp = rot_sub_img.ConvertToBitmap()
         return rot_sub_bmp
-
-
-def angle_diff(point, origin):
-    """ Returns the +ve clockwise angle from the origin to a point, (0 degrees is 3 o'clock) """
-    dx = point[0] - origin[0]
-    dy = point[1] - origin[1]
-    rads = atan2(-dy, dx)
-    rads %= 2 * pi
-    degrees_ = 360 - degrees(rads)
-    return degrees_
 
 
 def rect_centre(size, origin=(0, 0)):

@@ -1,7 +1,9 @@
 import os
 import wx
+import wx.lib.inspection
 from aic import ImageControlPanel, ImageControlFrame
-from aic import SingleSlider
+from aic import RotarySwitch
+from aic.rotary_switch import EVT_RS_CHANGE
 
 RESOURCES = 'res'
 
@@ -11,6 +13,8 @@ class ICPanel(ImageControlPanel):
         super().__init__(parent, bmp, *args, tiled, **kwargs)
 
         self._populate()
+
+        self.Bind(EVT_RS_CHANGE, self.on_dial_change, id=self.dial.GetId())
 
     def _populate(self):
         panel_sizer = wx.BoxSizer(wx.VERTICAL)
@@ -26,9 +30,9 @@ class ICPanel(ImageControlPanel):
 
         # Add a rotary dial control #
         dial_pair = (
-            wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide_bg.png')),
-            wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide_handle.png')))
-        self.dial = SingleSlider(self, dial_pair)
+            wx.Bitmap(os.path.join(RESOURCES, 'sticky_knob1.png')),
+            wx.Bitmap(os.path.join(RESOURCES, 'sticky_knob1_handle.png')))
+        self.dial = RotarySwitch(self, dial_pair)
         self.dial.set_padding((10, 10))
         self.dial.set_rotation_point_offset((-1, 0))
         self.dial.set_zero_angle_offset(-225)
@@ -53,6 +57,10 @@ class ICPanel(ImageControlPanel):
         self.SetSizer(panel_sizer)
         self.Layout()
 
+    def on_dial_change(self,event):
+        self.Text1.SetLabel(str(event.state))
+        event.Skip()
+
     def __del__(self):
         pass
 
@@ -70,6 +78,8 @@ class StdPanel(wx.Panel):
 
         top_sizer = wx.BoxSizer(wx.HORIZONTAL)
         top_sizer.Add((0, 0), 1, wx.EXPAND, 5)
+        self.Text1 = wx.StaticText(self, wx.ID_ANY, "Static Text", wx.DefaultPosition, wx.DefaultSize, 0)
+        top_sizer.Add(self.Text1, 0, wx.ALL, 10)
         top_sizer.Add((0, 0), 1, wx.EXPAND, 5)
         mid_sizer = wx.BoxSizer(wx.HORIZONTAL)
         mid_sizer.Add((0, 0), 1, wx.EXPAND, 5)
@@ -78,7 +88,7 @@ class StdPanel(wx.Panel):
         dial_pair = (
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_knob1.png')),
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_knob1_mark.png')))
-        self.dial = RotaryDial(self, dial_pair)
+        self.dial = RotarySwitch(self, dial_pair)
         self.dial.set_padding((10, 10))
         self.dial.set_rotation_point_offset((-1, 0))
         self.dial.set_zero_angle_offset(-225)
@@ -101,6 +111,12 @@ class StdPanel(wx.Panel):
 
         self.SetSizer(panel_sizer)
         self.Layout()
+
+        self.Bind(EVT_RS_CHANGE, self.on_dial_change, id=self.dial.GetId())
+
+    def on_dial_change(self,event):
+        self.Text1.SetLabel(str(event.state))
+        event.Skip()
 
     def __del__(self):
         pass
