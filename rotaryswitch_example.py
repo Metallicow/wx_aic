@@ -41,7 +41,7 @@ class ICPanel(ImageControlPanel):
         self.dial.set_max_angle(270)
         self.dial.set_step(2, 4)
         self.dial.set_highlighting()
-        self.dial.highlight_box = ((10,10), (-1,-1))
+        self.dial.highlight_box = ((0,0), (0,0))
         mid_sizer.Add(self.dial,0,0, 10)
 
         mid_sizer.Add((0, 0), 1, wx.EXPAND, 5)

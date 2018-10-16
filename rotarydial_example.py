@@ -41,8 +41,8 @@ class ICPanel(ImageControlPanel):
         self.dial.set_max_angle(270)
         self.dial.set_step(2, 4)
         self.dial.set_highlighting()
-        self.dial.highlight_box = ((10,10), (-1,-1))
-        mid_sizer.Add(self.dial,0,0, 10)
+        self.dial.highlight_box = ((-1, -1), (14, 14))
+        mid_sizer.Add(self.dial, 0, 0, 10)
 
         mid_sizer.Add((0, 0), 1, wx.EXPAND, 5)
 
@@ -57,7 +57,7 @@ class ICPanel(ImageControlPanel):
         self.SetSizer(panel_sizer)
         self.Layout()
 
-    def on_dial_change(self,event):
+    def on_dial_change(self, event):
         self.Text1.SetLabel(str(event.state))
         event.Skip()
 
@@ -97,8 +97,8 @@ class StdPanel(wx.Panel):
         self.dial.set_max_angle(270)
         self.dial.set_step(2, 4)
         self.dial.set_highlighting()
-        self.dial.highlight_box = ((10,10), (3,3))
-        mid_sizer.Add(self.dial,0,0, 10)
+        self.dial.highlight_box = ((10, -10), (9, 9))
+        mid_sizer.Add(self.dial, 0, 0, 10)
 
         mid_sizer.Add((0, 0), 1, wx.EXPAND, 5)
         bot_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -114,7 +114,7 @@ class StdPanel(wx.Panel):
 
         self.Bind(EVT_RD_CHANGE, self.on_dial_change, id=self.dial.GetId())
 
-    def on_dial_change(self,event):
+    def on_dial_change(self, event):
         self.Text1.SetLabel(str(event.state))
         event.Skip()
 

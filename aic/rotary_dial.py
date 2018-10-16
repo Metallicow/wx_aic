@@ -60,7 +60,7 @@ class RotaryDial(ActiveImageControl):
         self._pointer_limit_hit = None
         self._pointer_angle = self.pointer_default
 
-        self.highlight_box = ((1, 2), (0, 0))
+        self.highlight_box = ((0, 0), (0, 0))
 
         self.SetBackgroundStyle(wx.BG_STYLE_PAINT)
         self.Bind(wx.EVT_PAINT, self.on_paint)
@@ -85,13 +85,13 @@ class RotaryDial(ActiveImageControl):
         self.draw_to_context(wx.BufferedPaintDC(self, buffer_bitmap))
 
     def draw_to_context(self, dc):
-        dc.DrawBitmap(self.stat_bmp, self.stat_padding)
+        dc.DrawBitmap(self.stat_bmp, self._stat_position)
         indicator_angle = self._parse_angle(360 - self._pointer_angle - self._dynam_bmp_rot_offset)
         indicator = self.rotate_bmp(self.dynam_bmp, indicator_angle)
         dc.DrawBitmap(indicator, self._dynam_pos)
 
         if self.highlight and self.HasFocus():
-            self.draw_highlight(dc, self._stat_size, self.highlight_box)
+            self.draw_highlight(dc, self.GetSize(), self.highlight_box)
 
     def on_keypress(self, event):
         if self.HasFocus():
@@ -179,7 +179,7 @@ class RotaryDial(ActiveImageControl):
         self._scroll_step = step
 
     def set_key_step(self, step=1.0):
-        """ Set the scroll-wheel step size in degrees (float > 0) """
+        """ Set the key step size in degrees (float > 0) """
         self._key_step = step
 
     def set_angle(self, angle=0.0):
