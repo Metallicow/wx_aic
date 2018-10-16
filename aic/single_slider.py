@@ -93,7 +93,7 @@ class SingleSlider(ActiveImageControl):
             elif keycode in [wx.WXK_LEFT, wx.WXK_DOWN]:
                 self.set_position((self._handle_pos[0] - self._key_step, self._handle_pos[1]))
             elif keycode == wx.WXK_SPACE:
-                self._animated_reset()
+                self.reset_position()
             elif keycode == wx.WXK_TAB:
                 self.Navigate(not (event.ShiftDown()))  # Navigates backwards if 'shift' key is held
         event.Skip()
@@ -127,7 +127,7 @@ class SingleSlider(ActiveImageControl):
     def on_middle_up(self, _):
         if not self.HasFocus():
             self.SetFocus()
-        self._animated_reset()
+        self.reset_position()
 
     def on_mouse_wheel(self, event):
         if not self.HasFocus():
@@ -184,8 +184,8 @@ class SingleSlider(ActiveImageControl):
             wx.PostEvent(self, ss_cmd_event(id=self.GetId(), state=self.value))
             self._refresh()
 
-    def reset(self, animate=True):
-        self._animated_reset(animate)
+    def reset_position(self, animate=True):
+        self._animate(self._handle_default, animate)
 
     # Properties #
     @property
@@ -201,30 +201,29 @@ class SingleSlider(ActiveImageControl):
     def _refresh(self):
         self.Refresh(True)  # because we use the full length of the control, we refresh the whole window
 
-    def _animated_reset(self, animate=True):
-        # Also extend function for clicking on a point animation
-        # Also balance up speed for midpoint reset ( it goes fast one way than the other) zero point reset is fine
+    def _animate(self, destination, animate=True):
         if not animate:
-            self.set_position(self._handle_default)
+            self.set_position(destination)
         else:
-            curr_pos = self._handle_pos[0]  # for horizontal movement
+            curr_pos = self._handle_pos[0]  # for horizontal movement, [1] for vertical...
             max_pos = self._handle_max_pos[0]
-            def_pos = self._handle_default[0]
+            def_pos = destination[0]
             diff = def_pos - curr_pos
             if diff:
                 step = 4 * int(diff / abs(diff))
                 start = time.perf_counter()
                 for i in range(curr_pos, def_pos, step):
-                    self.set_position((i, self._handle_pos[1]))
+                    self.set_position((i, destination[1]))
                     # because we are using sleep in a loop, we are not returning control to the main loop
                     # so we need to call update() to refresh the screen immediately - ie to 'animate'
                     self.Update()
                     if i != 0:
-                        to = ptw.easeInQuart(abs((curr_pos - i + 1) / diff)) / int(max_pos - def_pos * 0.75)
-                        time.sleep(to)
+                        time.sleep(ptw.easeInQuart(abs((curr_pos - i + 1) / diff)) / int((max_pos - def_pos) * 0.75))
+                        print(int((max_pos - def_pos) * 0.75))
                         # TODO don't like sleeping the tween - threading version, maybe use position not time
+        # Also extend function for clicking on a point animation
                 print(time.perf_counter() - start)
-                self.set_position(self._handle_default)
+                self.set_position(destination)
                 self._pointer_limit_hit = None
 
     def _parse_limits(self, position, max_pos):

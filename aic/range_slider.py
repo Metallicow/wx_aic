@@ -215,7 +215,7 @@ class RangeSlider(ActiveImageControl):
     def _animated_reset(self, animate=True):
         # TODO send animation to thread? or callAfter?
         # Also extend function for clicking on a point animation
-        # Also balance up speed for midpoint reset ( it goes fast one way than the other) zero point reset is fine
+        # Also balance up speed for midpoint reset_position ( it goes fast one way than the other) zero point reset_position is fine
         if not animate:
             self.set_angle(self.pointer_default)
         else:

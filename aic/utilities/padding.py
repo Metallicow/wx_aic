@@ -3,7 +3,7 @@ class Padding:
     Padding can be applied to the foundation element of an ActiveImageControl
 
     :param widths:  take a tuple of 1 to 4 integers or None
-                    ()          None will reset padding to 0 on all sides
+                    ()          None will reset_position padding to 0 on all sides
                     (10,)       All four sides are padded 10px
                     (10,20)     Top and bottom are padded 10px; Right and left are padded 20px
                     (10,5,20)   Top padding 10px; right and left are 5px; bottom padding is 20px

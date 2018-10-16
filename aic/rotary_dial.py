@@ -54,7 +54,7 @@ class RotaryDial(ActiveImageControl):
         self._zero_angle_offset = 0
         self._scroll_step = 1
         self._key_step = 1
-        self.pointer_default = 0
+        self.pointer_default = 50
         self._pointer_min_angle = 0
         self.pointer_max_angle = 360
         self._pointer_limit_hit = None
@@ -213,22 +213,23 @@ class RotaryDial(ActiveImageControl):
         self.Refresh(True, (wx.Rect(self._dynam_pos, self._dynam_size)))
 
     def _animated_reset(self, animate=True):
-        # Also extend function for clicking on a point animation
-        # Also balance up speed for midpoint reset ( it goes fast one way than the other) zero point reset is fine
         if not animate:
             self.set_angle(self.pointer_default)
         else:
-            current_position = int(self._pointer_angle)
-            if self._pointer_angle != self.pointer_default:
-                step = -1 if current_position > self.pointer_default else 1
-                for i in range(current_position, self.pointer_default, step):
-                    self._pointer_angle = i
+            curr_pos = int(self._pointer_angle)
+            max_pos = self.pointer_max_angle
+            def_pos = self.pointer_default
+            diff = def_pos - curr_pos
+            if diff:
+                step = 4 * int(diff / abs(diff))
+                for i in range(curr_pos, def_pos, step):
+                    self.set_angle(i)
                     self.Update()  # in this case, the buffer won't empty until update() is called
                     if i != 0:
-                        time.sleep(ptw.easeOutExpo(1 / i) / 85)
+                        time.sleep(ptw.easeInQuart(abs((curr_pos - i + 1) / diff)) / int(max_pos - def_pos * 0.75))
                         # TODO don't like sleeping the tween - threading version, maybe use position not time
-                    self._refresh()
-                self.set_angle(self.pointer_default)
+        # Also extend function for clicking on a point animation
+                self.set_angle(def_pos)
                 self._pointer_limit_hit = None
 
     def _parse_limits(self, angle, max_angle):
