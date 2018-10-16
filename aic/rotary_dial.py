@@ -213,7 +213,6 @@ class RotaryDial(ActiveImageControl):
         self.Refresh(True, (wx.Rect(self._dynam_pos, self._dynam_size)))
 
     def _animated_reset(self, animate=True):
-        # TODO send animation to thread? or callAfter?
         # Also extend function for clicking on a point animation
         # Also balance up speed for midpoint reset ( it goes fast one way than the other) zero point reset is fine
         if not animate:

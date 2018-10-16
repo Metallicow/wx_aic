@@ -9,6 +9,8 @@ class ActiveImageControl(wx.Control):
 
         self.highlight = False
 
+        self.animate_timer = wx.Timer(self, wx.ID_OK)
+
         self.Bind(wx.EVT_ERASE_BACKGROUND, self._on_erase_background)
         self.Bind(wx.EVT_SET_FOCUS, self._on_focus_change)
         self.Bind(wx.EVT_KILL_FOCUS, self._on_focus_change)

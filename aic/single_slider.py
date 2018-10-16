@@ -39,7 +39,8 @@ class SingleSlider(ActiveImageControl):
         self._handle_offset = (0, 0)  # x,y offset for positioning handle relative to the zero position
         self._handle_centre = rect_centre(self._handle_size)
         self._handle_default = wx.Point(0, 0)
-        self._handle_max_pos = wx.Point(self._stat_size[0], self._stat_size[1]) # max position relative to zero position
+        self._handle_max_pos = wx.Point(self._stat_size[0],
+                                        self._stat_size[1])  # max position relative to zero position
         self._handle_pos = wx.Point(self._handle_offset)  # handle top-left point
 
         self._scroll_step = 1
@@ -55,6 +56,9 @@ class SingleSlider(ActiveImageControl):
         self.Bind(wx.EVT_MIDDLE_UP, self.on_middle_up)
         self.Bind(wx.EVT_MOUSEWHEEL, self.on_mouse_wheel)
         self.Bind(wx.EVT_MOUSE_EVENTS, self.on_left_drag)
+        # self.Bind(wx.EVT_CLOSE, self.onclose)
+
+        # self.Bind(wx.EVT_TIMER, self.dotime, self.animate_timer)
 
     # Class overrides #
     def DoGetBestSize(self):
@@ -62,6 +66,9 @@ class SingleSlider(ActiveImageControl):
         pad_x, pad_y = self._stat_padding
         size = wx.Size(w + pad_x * 2, h + pad_y * 2)
         return size
+
+    def dotime(self, event):
+        print('timer tick')
 
     # Event handling #
     def on_paint(self, _):
@@ -195,24 +202,28 @@ class SingleSlider(ActiveImageControl):
         self.Refresh(True)  # because we use the full length of the control, we refresh the whole window
 
     def _animated_reset(self, animate=True):
-        # TODO send animation to thread? or callAfter?
         # Also extend function for clicking on a point animation
         # Also balance up speed for midpoint reset ( it goes fast one way than the other) zero point reset is fine
         if not animate:
             self.set_position(self._handle_default)
         else:
-            # self.set_position(self._handle_default)
-            current_position = self._handle_pos[0]      # for horizontal movement
-            if self._handle_pos != self._handle_default:
-                step = -1 if current_position > self._handle_default[0] else 1
-                for i in range(current_position, self._handle_default[0], step):  # TODO change for non-zero default
-                    print(self._handle_default[0], current_position)
-                    self._handle_pos = (i, self._handle_pos[1])
-                    self.Update()  # in this case, the buffer won't empty until update() is called
+            curr_pos = self._handle_pos[0]  # for horizontal movement
+            max_pos = self._handle_max_pos[0]
+            def_pos = self._handle_default[0]
+            diff = def_pos - curr_pos
+            if diff:
+                step = 4 * int(diff / abs(diff))
+                start = time.perf_counter()
+                for i in range(curr_pos, def_pos, step):
+                    self.set_position((i, self._handle_pos[1]))
+                    # because we are using sleep in a loop, we are not returning control to the main loop
+                    # so we need to call update() to refresh the screen immediately - ie to 'animate'
+                    self.Update()
                     if i != 0:
-                        time.sleep(ptw.easeOutExpo(1 / i) / 85)
+                        to = ptw.easeInQuart(abs((curr_pos - i + 1) / diff)) / int(max_pos - def_pos * 0.75)
+                        time.sleep(to)
                         # TODO don't like sleeping the tween - threading version, maybe use position not time
-                    self._refresh()
+                print(time.perf_counter() - start)
                 self.set_position(self._handle_default)
                 self._pointer_limit_hit = None
 

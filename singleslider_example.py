@@ -28,14 +28,14 @@ class ICPanel(ImageControlPanel):
         mid_sizer = wx.BoxSizer(wx.HORIZONTAL)
         mid_sizer.Add((0, 0), 1, wx.EXPAND, 5)
 
-        # Add a rotary dial control #
+        # Add a single slider control #
         slider_pair = (
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1.png')),
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1_handle.png')))
         self.slide = SingleSlider(self, slider_pair)
         self.slide.set_padding((30, 60))
         self.slide.set_offset((10,9))
-        self.slide.set_default_pos((30, 0))
+        self.slide.set_default_pos((0, 0))
         self.slide.set_max((210, 0))
         self.slide.set_step(2, 4)
         self.slide.set_highlighting()
@@ -101,7 +101,7 @@ class StdPanel(wx.Panel):
         self.SetSizer(panel_sizer)
         self.Layout()
 
-        self.Bind(EVT_SS_CHANGE, self.on_dial_change, id=self.dial.GetId())
+        self.Bind(EVT_SS_CHANGE, self.on_dial_change, id=self.slider.GetId())
 
     def on_dial_change(self,event):
         self.Text1.SetLabel(str(event.state))
