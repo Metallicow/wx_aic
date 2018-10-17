@@ -1,5 +1,4 @@
 import time
-from math import atan2, pi, degrees, radians
 
 import wx
 from wx.lib.newevent import NewCommandEvent
@@ -12,7 +11,7 @@ ss_cmd_event, EVT_SS_CHANGE = NewCommandEvent()
 
 class SingleSlider(ActiveImageControl):
 
-    def __init__(self, parent, bitmaps, horizontal=True, *args, **kwargs):
+    def __init__(self, parent, bitmaps, isvertical=False, *args, **kwargs):
         """
         An Image Control for presenting a rotary dial style, (eg a knob or dial type control)
         It behaves similarly to a native control slider, except value is expressed as degrees (float)
@@ -24,11 +23,11 @@ class SingleSlider(ActiveImageControl):
         """
 
         super().__init__(parent, *args, **kwargs)
-        # No borders, yuk!  Wants Chars - to grab (cursor) key input
+        # No borders + Wants Chars - to grab (cursor) key input
         self.SetWindowStyleFlag(wx.NO_BORDER | wx.WANTS_CHARS)
 
         self.parent = parent
-        self.horizontal = horizontal
+        self.index = isvertical     # index is 0 for horizontal layout, 1 for vertical layout
         self.stat_bmp = bitmaps[0]
         self._stat_size = self.stat_bmp.Size
         self._stat_padding = (10, 10)
@@ -56,9 +55,6 @@ class SingleSlider(ActiveImageControl):
         self.Bind(wx.EVT_MIDDLE_UP, self.on_middle_up)
         self.Bind(wx.EVT_MOUSEWHEEL, self.on_mouse_wheel)
         self.Bind(wx.EVT_MOUSE_EVENTS, self.on_left_drag)
-        # self.Bind(wx.EVT_CLOSE, self.onclose)
-
-        # self.Bind(wx.EVT_TIMER, self.dotime, self.animate_timer)
 
     # Class overrides #
     def DoGetBestSize(self):
@@ -66,9 +62,6 @@ class SingleSlider(ActiveImageControl):
         pad_x, pad_y = self._stat_padding
         size = wx.Size(w + pad_x * 2, h + pad_y * 2)
         return size
-
-    def dotime(self, event):
-        print('timer tick')
 
     # Event handling #
     def on_paint(self, _):
@@ -88,53 +81,52 @@ class SingleSlider(ActiveImageControl):
     def on_keypress(self, event):
         if self.HasFocus():
             keycode = event.GetKeyCode()
+            index = self.index
             if keycode in [wx.WXK_RIGHT, wx.WXK_UP]:
-                self.set_position((self._handle_pos[0] + self._key_step, self._handle_pos[1]))
+                handle_pos = self._handle_pos[index] + self._key_step
+                self.move_handle(handle_pos)
             elif keycode in [wx.WXK_LEFT, wx.WXK_DOWN]:
-                self.set_position((self._handle_pos[0] - self._key_step, self._handle_pos[1]))
+                handle_pos = self._handle_pos[index] - self._key_step
+                self.move_handle(handle_pos)
             elif keycode == wx.WXK_SPACE:
                 self.reset_position()
             elif keycode == wx.WXK_TAB:
                 self.Navigate(not (event.ShiftDown()))  # Navigates backwards if 'shift' key is held
         event.Skip()
 
-    def on_left_down(self, event):
+    def on_mouse_wheel(self, event):
         if not self.HasFocus():
             self.SetFocus()
-        if self.horizontal:
-            self.follow_horiz(event.GetPosition())
-        else:
-            self.follow_vert(event.GetPosition())
+        index = self.index
+        delta = event.GetWheelDelta()  # usually +/-120, but it's better not to assume
+        handle_pos = self._handle_pos[index] + (self._scroll_step * event.GetWheelRotation() // delta)
+        self.move_handle(handle_pos)
+
+    def on_left_down(self, event):
+        self.mouse_move(event.GetPosition())
 
     def on_left_drag(self, event):
         if event.Dragging() and event.LeftIsDown():
-            if not self.HasFocus():
-                self.SetFocus()
-            if self.horizontal:
-                self.follow_horiz(event.GetPosition())
-            else:
-                self.follow_vert(event.GetPosition())
+            self.mouse_move(event.GetPosition())
         event.Skip()
 
-    def follow_horiz(self, mouse_pos):
-        handle_x = mouse_pos[0] - self._handle_centre[0] - self._stat_padding[0]
-        self.set_position((handle_x, self._handle_pos[1]))
+    def mouse_move(self, mouse_pos):
+        if not self.HasFocus():
+            self.SetFocus()
+        index = self.index
+        handle_pos = mouse_pos[index] - self._handle_centre[index] - self._stat_padding[index]
+        self.move_handle(handle_pos)
 
-    def follow_vert(self, mouse_pos):
-        handle_y = mouse_pos[1] - self._handle_centre[1] - self._stat_padding[1]
-        self.set_position((self._handle_pos[0], handle_y))
+    def move_handle(self,pos):
+        if self.index:
+            self.set_position((self._handle_pos[0], pos))
+        else:
+            self.set_position((pos, self._handle_pos[1]))
 
     def on_middle_up(self, _):
         if not self.HasFocus():
             self.SetFocus()
         self.reset_position()
-
-    def on_mouse_wheel(self, event):
-        if not self.HasFocus():
-            self.SetFocus()
-        delta = event.GetWheelDelta()  # usually +/-120, but it's better not to assume
-        position = self._handle_pos[0] + (self._scroll_step * event.GetWheelRotation() // delta)
-        self.set_position((position, (self._handle_pos[1])))
 
     # Getters and Setters #
     def set_padding(self, padding=(0, 0)):
@@ -190,12 +182,15 @@ class SingleSlider(ActiveImageControl):
     # Properties #
     @property
     def value(self):
-        value = self._handle_pos[0] / self._handle_max_pos[0]
+        value = self._handle_pos[self.index] / self._handle_max_pos[self.index]
         return value  # as percentage
 
     @value.setter
     def value(self, percent):
-        self.set_position((percent * self._handle_max_pos[0], self._handle_max_pos[1]))
+        if self.index:
+            self.set_position((self._handle_max_pos[0], percent * self._handle_max_pos[1]))
+        else:
+            self.set_position((percent * self._handle_max_pos[0], self._handle_max_pos[1]))
 
     # Helper methods #
     def _refresh(self):
@@ -205,15 +200,16 @@ class SingleSlider(ActiveImageControl):
         if not animate:
             self.set_position(destination)
         else:
-            curr_pos = self._handle_pos[0]  # for horizontal movement, [1] for vertical...
-            max_pos = self._handle_max_pos[0]
-            def_pos = destination[0]
+            index = self.index
+            curr_pos = self._handle_pos[index]  # for horizontal movement, [1] for vertical...
+            max_pos = self._handle_max_pos[index]
+            def_pos = destination[index]
             diff = def_pos - curr_pos
             if diff:
                 step = 4 * int(diff / abs(diff))
-                start = time.perf_counter()
+                # start = time.perf_counter()
                 for i in range(curr_pos, def_pos, step):
-                    self.set_position((i, destination[1]))
+                    self.move_handle(i)
                     # because we are using sleep in a loop, we are not returning control to the main loop
                     # so we need to call update() to refresh the screen immediately - ie to 'animate'
                     self.Update()
@@ -221,20 +217,21 @@ class SingleSlider(ActiveImageControl):
                         time.sleep(ptw.easeInQuart(abs((curr_pos - i + 1) / diff)) / int((max_pos - def_pos) * 0.75))
                         print(int((max_pos - def_pos) * 0.75))
                         # TODO don't like sleeping the tween - threading version, maybe use position not time
-        # Also extend function for clicking on a point animation
-                print(time.perf_counter() - start)
+                        # Also maybe extend function for clicking on a point animation
+        #         print(time.perf_counter() - start)
                 self.set_position(destination)
-                self._pointer_limit_hit = None
 
     def _parse_limits(self, position, max_pos):
         parsed_position = position
-        if position[0] > max_pos[0]:  # for horizontal slider - max
-            parsed_position = max_pos
-            self._pointer_limit_hit = max_pos
-        elif position[0] < 0:
-            parsed_position = (0, max_pos[1])
-        else:
-            self._pointer_limit_hit = None
+        index = self.index
+        if position[index] > max_pos[index]:
+            return max_pos
+        elif position[index] < 0:
+            if self.index:
+
+                return (max_pos[0], 0)
+            else:
+               return (0, max_pos[1])
         return parsed_position
 
 

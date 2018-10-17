@@ -15,26 +15,30 @@ class ICPanel(ImageControlPanel):
         self._populate()
 
         self.Bind(EVT_SS_CHANGE, self.on_slider_change, id=self.slide.GetId())
+        self.Bind(EVT_SS_CHANGE, self.on_vslider_change, id=self.vslide.GetId())
 
     def _populate(self):
         panel_sizer = wx.BoxSizer(wx.VERTICAL)
 
         top_sizer = wx.BoxSizer(wx.HORIZONTAL)
         top_sizer.Add((0, 0), 1, wx.EXPAND, 5)
-        self.Text1 = wx.StaticText(self, wx.ID_ANY, "Static Text", wx.DefaultPosition, wx.DefaultSize, 0)
+        self.Text1 = wx.StaticText(self, wx.ID_ANY, "Horizontal", wx.DefaultPosition, wx.DefaultSize, 0)
+        self.Text2 = wx.StaticText(self, wx.ID_ANY, "Vertical", wx.DefaultPosition, wx.DefaultSize, 0)
+        top_sizer.Add(self.Text2, 0, wx.ALL, 10)
         top_sizer.Add(self.Text1, 0, wx.ALL, 10)
         top_sizer.Add((0, 0), 1, wx.EXPAND, 5)
 
         mid_sizer = wx.BoxSizer(wx.HORIZONTAL)
+
         mid_sizer.Add((0, 0), 1, wx.EXPAND, 5)
 
-        # Add a single slider control #
+        # Add a single horizontal slider control #
         slider_pair = (
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1.png')),
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1_handle.png')))
         self.slide = SingleSlider(self, slider_pair)
         self.slide.set_padding((30, 60))
-        self.slide.set_offset((10,9))
+        self.slide.set_offset((10, 9))
         self.slide.set_default_pos((0, 0))
         self.slide.set_max((210, 0))
         self.slide.set_step(2, 4)
@@ -46,6 +50,21 @@ class ICPanel(ImageControlPanel):
 
         bot_sizer = wx.BoxSizer(wx.HORIZONTAL)
         bot_sizer.Add((0, 0), 1, wx.EXPAND, 5)
+
+        # Add a single vertical slider control #
+        slider_pair = (
+            wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1v.png')),
+            wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1_handle.png')))
+        self.vslide = SingleSlider(self, slider_pair, isvertical=True)
+        self.vslide.set_padding((30, 10))
+        self.vslide.set_offset((8, 10))
+        self.vslide.set_default_pos((0, 0))
+        self.vslide.set_max((0, 210))
+        self.vslide.set_step(2, 4)
+        self.vslide.set_highlighting()
+        self.vslide.highlight_box = ((0, 0), (0, 0))
+        bot_sizer.Add(self.vslide, 0, 0, 10)
+
         bot_sizer.Add((0, 0), 1, wx.EXPAND, 5)
 
         panel_sizer.Add(top_sizer, 1, wx.EXPAND, 5)
@@ -55,8 +74,12 @@ class ICPanel(ImageControlPanel):
         self.SetSizer(panel_sizer)
         self.Layout()
 
-    def on_slider_change(self,event):
-        self.Text1.SetLabel(str(int(event.state*100)))
+    def on_slider_change(self, event):
+        self.Text1.SetLabel(str(int(event.state * 100)))
+        event.Skip()
+
+    def on_vslider_change(self, event):
+        self.Text2.SetLabel(str(int(event.state * 100)))
         event.Skip()
 
     def __del__(self):
@@ -87,7 +110,7 @@ class StdPanel(wx.Panel):
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_knob1.png')),
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_knob1_mark.png')))
         self.slider = SingleSlider(self, slider_pair)
-        mid_sizer.Add(self.slider,0,0, 10)
+        mid_sizer.Add(self.slider, 0, 0, 10)
 
         mid_sizer.Add((0, 0), 1, wx.EXPAND, 5)
         bot_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -103,7 +126,7 @@ class StdPanel(wx.Panel):
 
         self.Bind(EVT_SS_CHANGE, self.on_dial_change, id=self.slider.GetId())
 
-    def on_dial_change(self,event):
+    def on_dial_change(self, event):
         self.Text1.SetLabel(str(event.state))
         event.Skip()
 
