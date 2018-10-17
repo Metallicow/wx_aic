@@ -27,7 +27,7 @@ class SingleSlider(ActiveImageControl):
         self.SetWindowStyleFlag(wx.NO_BORDER | wx.WANTS_CHARS)
 
         self.parent = parent
-        self.index = isvertical     # index is 0 for horizontal layout, 1 for vertical layout
+        self.index = isvertical  # index is 0 for horizontal layout, 1 for vertical layout
         self.stat_bmp = bitmaps[0]
         self._stat_size = self.stat_bmp.Size
         self._stat_padding = (10, 10)
@@ -117,7 +117,7 @@ class SingleSlider(ActiveImageControl):
         handle_pos = mouse_pos[index] - self._handle_centre[index] - self._stat_padding[index]
         self.move_handle(handle_pos)
 
-    def move_handle(self,pos):
+    def move_handle(self, pos):
         if self.index:
             self.set_position((self._handle_pos[0], pos))
         else:
@@ -218,7 +218,7 @@ class SingleSlider(ActiveImageControl):
                         print(int((max_pos - def_pos) * 0.75))
                         # TODO don't like sleeping the tween - threading version, maybe use position not time
                         # Also maybe extend function for clicking on a point animation
-        #         print(time.perf_counter() - start)
+                #         print(time.perf_counter() - start)
                 self.set_position(destination)
 
     def _parse_limits(self, position, max_pos):
@@ -228,10 +228,9 @@ class SingleSlider(ActiveImageControl):
             return max_pos
         elif position[index] < 0:
             if self.index:
-
-                return (max_pos[0], 0)
+                return max_pos[0], 0
             else:
-               return (0, max_pos[1])
+                return 0, max_pos[1]
         return parsed_position
 
 
