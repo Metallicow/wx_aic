@@ -36,7 +36,7 @@ class ICPanel(ImageControlPanel):
             stack.spacing = 1
             stack.colour_shrink = 1
             stack.vertical = False
-            stack.reversed = (i > 0)
+            stack.inverted = (i > 0)
             stack.value = 5
             hsizer2.Add(stack)
             self.ledstack2.append(stack)
@@ -59,7 +59,7 @@ class ICPanel(ImageControlPanel):
             stack.spacing = 1
             stack.colour_shrink = 1
             stack.vertical = True
-            stack.reversed = (i > 0)
+            stack.inverted = (i > 0)
             stack.value = 1
             stack.set_style(True)
             hsizer3.Add(stack)
