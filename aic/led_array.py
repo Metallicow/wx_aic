@@ -25,6 +25,7 @@ class LedArray(ActiveImageControl):
         self.colours = colours
         self.vertical = True
         self.reversed = False
+        self.bar = True       # True if bar style, False if point style
         self.bg_colour = wx.GREEN
         self.colour_shrink = 0  # reduce the rectangle on the back-painted solid colour (if used)
         self.stat_bmp = self.bmp_pair[0]
@@ -102,12 +103,19 @@ class LedArray(ActiveImageControl):
             y = py + sy
             rect = wx.Rect(x, y, w, h)
 
-            # using Deflate to correct for the extra line width added by DrawRectangle
+            # using Deflate to adjust rectangle size
             dc.DrawRectangle(rect.Deflate(self.colour_shrink))
-            if self.reversed:
-                dc.DrawBitmap(self.bmp_pair[self.value > index], x, y)
+            if self.bar:
+                if self.reversed:
+                    dc.DrawBitmap(self.bmp_pair[self.value > index], x, y)
+                else:
+                    dc.DrawBitmap(self.bmp_pair[self.value >= len(self.colours) - index], x, y)
             else:
-                dc.DrawBitmap(self.bmp_pair[self.value >= len(self.colours) - index], x, y)
+                if self.reversed:
+                    dc.DrawBitmap(self.bmp_pair[self.value == index+1], x, y)
+                else:
+                    dc.DrawBitmap(self.bmp_pair[self.value == len(self.colours) - index], x, y)
+
         bob = dc_to_bitmap(self, dc)
         # save_bmp_to_file(bob, 'bbits.png', filetype=wx.BITMAP_TYPE_PNG)
         return bob
@@ -115,6 +123,12 @@ class LedArray(ActiveImageControl):
     # Getters and Setters #
     def set_padding(self, padding):
         self.stat_padding = padding
+
+    def set_style(self, is_bar_style=True):
+        self.bar = is_bar_style
+
+    def set_direction(self, is_reversed=False):
+        self.bar = is_reversed
 
     # Properties #
     @property

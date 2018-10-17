@@ -27,7 +27,7 @@ class RotaryDial(ActiveImageControl):
         """
 
         super().__init__(parent, *args, **kwargs)
-        # No borders, yuk!  Wants Chars - to grab (cursor) key input
+        # No borders + Wants Chars - to grab (cursor) key input
         self.SetWindowStyleFlag(wx.NO_BORDER | wx.WANTS_CHARS)
 
         self.parent = parent

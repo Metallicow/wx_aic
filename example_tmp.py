@@ -1,6 +1,6 @@
 import os
 import wx
-from aic import ImageControlPanel, ImageControlFrame
+from aic import ImageControlPanel, ImageControlFrame, LedArray, RotaryDial
 from aic import SingleSlider
 
 RESOURCES = 'res'
@@ -24,26 +24,48 @@ class ICPanel(ImageControlPanel):
         mid_sizer = wx.BoxSizer(wx.HORIZONTAL)
         mid_sizer.Add((0, 0), 1, wx.EXPAND, 5)
 
-        # Add a rotary dial control #
-        dial_pair = (
-            wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide_bg.png')),
-            wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide_handle.png')))
-        self.dial = SingleSlider(self, dial_pair)
-        self.dial.set_padding((10, 10))
-        self.dial.set_rotation_point_offset((-1, 0))
-        self.dial.set_zero_angle_offset(-225)
-        self.dial.set_pointer_rot_offset(-135)
-        self.dial.set_initial_angle(0)
-        self.dial.set_max_angle(270)
-        self.dial.set_step(2, 4)
-        self.dial.set_highlighting()
-        self.dial.highlight_box = ((10,10), (-1,-1))
-        mid_sizer.Add(self.dial,0,0, 10)
+        hsizer2 = wx.BoxSizer()
+        self.ledstack2 = []
+        for i in range(2):
+            colourstack = [wx.Colour(25, 225, 25, 200)] * 4
+            colourstack.append(wx.Colour(225, 225, 25, 255))
+            ledstuff = (wx.Bitmap(os.path.join(RESOURCES, 'led1rect_inactive_dark_basic2.png')),
+                        wx.Bitmap(os.path.join(RESOURCES, 'led1rect_active_dark_basic2.png')))
+            stack = LedArray(self, ledstuff, colourstack)
+            stack.set_padding((15, 10))
+            stack.spacing = 1
+            stack.colour_shrink = 1
+            stack.vertical = False
+            stack.reversed = (i > 0)
+            stack.value = 5
+            hsizer2.Add(stack)
+            self.ledstack2.append(stack)
 
+        mid_sizer.Add(hsizer2)
         mid_sizer.Add((0, 0), 1, wx.EXPAND, 5)
 
         bot_sizer = wx.BoxSizer(wx.HORIZONTAL)
         bot_sizer.Add((0, 0), 1, wx.EXPAND, 5)
+
+        hsizer3 = wx.BoxSizer()
+        self.ledstack3 = []
+        for i in range(2):
+            colourstack = [wx.Colour(25, 35, 205, 200)] * 4
+            colourstack.append(wx.Colour(25, 65, 255, 255))
+            ledstuff = (wx.Bitmap(os.path.join(RESOURCES, 'led1rect_inactive_dark_basic2.png')),
+                        wx.Bitmap(os.path.join(RESOURCES, 'led1rect_active_dark_basic2.png')))
+            stack = LedArray(self, ledstuff, colourstack)
+            stack.set_padding((15, 10))
+            stack.spacing = 1
+            stack.colour_shrink = 1
+            stack.vertical = True
+            stack.reversed = (i > 0)
+            stack.value = 1
+            stack.set_style(True)
+            hsizer3.Add(stack)
+            self.ledstack3.append(stack)
+
+        bot_sizer.Add(hsizer3)
         bot_sizer.Add((0, 0), 1, wx.EXPAND, 5)
 
         panel_sizer.Add(top_sizer, 1, wx.EXPAND, 5)
@@ -87,8 +109,8 @@ class StdPanel(wx.Panel):
         self.dial.set_max_angle(270)
         self.dial.set_step(2, 4)
         self.dial.set_highlighting()
-        self.dial.highlight_box = ((10,10), (3,3))
-        mid_sizer.Add(self.dial,0,0, 10)
+        self.dial.highlight_box = ((10, 10), (3, 3))
+        mid_sizer.Add(self.dial, 0, 0, 10)
 
         mid_sizer.Add((0, 0), 1, wx.EXPAND, 5)
         bot_sizer = wx.BoxSizer(wx.HORIZONTAL)
