@@ -58,7 +58,7 @@ class ICPanel(ImageControlPanel):
         self.Layout()
 
     def on_dial_change(self, event):
-        self.Text1.SetLabel(str(event.state))
+        self.Text1.SetLabel(str(event.value))
         event.Skip()
 
     def __del__(self):

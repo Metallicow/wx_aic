@@ -11,7 +11,7 @@ ss_cmd_event, EVT_SS_CHANGE = NewCommandEvent()
 
 class SingleSlider(ActiveImageControl):
 
-    def __init__(self, parent, bitmaps, isvertical=False, *args, **kwargs):
+    def __init__(self, parent, bitmaps, is_vertical=False, is_inverted=False, *args, **kwargs):
         """
         An Image Control for presenting a rotary dial style, (eg a knob or dial type control)
         It behaves similarly to a native control slider, except value is expressed as degrees (float)
@@ -27,7 +27,8 @@ class SingleSlider(ActiveImageControl):
         self.SetWindowStyleFlag(wx.NO_BORDER | wx.WANTS_CHARS)
 
         self.parent = parent
-        self.index = isvertical  # index is 0 for horizontal layout, 1 for vertical layout
+        self.vertical = is_vertical
+        self.inverted = is_inverted  # False for lt->rt & top->bot layouts; True for rt->lt & bot->top layouts
         self.stat_bmp = bitmaps[0]
         self._stat_size = self.stat_bmp.Size
         self._stat_padding = (10, 10)
@@ -38,9 +39,8 @@ class SingleSlider(ActiveImageControl):
         self._handle_offset = (0, 0)  # x,y offset for positioning handle relative to the zero position
         self._handle_centre = rect_centre(self._handle_size)
         self._handle_default = wx.Point(0, 0)
-        self._handle_max_pos = wx.Point(self._stat_size[0],
-                                        self._stat_size[1])  # max position relative to zero position
-        self._handle_pos = wx.Point(self._handle_offset)  # handle top-left point
+        self._handle_max_pos = wx.Point(self._stat_size[0], self._stat_size[1])  # max pos in relation to zero pos
+        self._handle_pos = wx.Point(self._handle_offset)
 
         self._scroll_step = 1
         self._key_step = 1
@@ -72,8 +72,13 @@ class SingleSlider(ActiveImageControl):
 
     def draw_to_context(self, dc):
         dc.DrawBitmap(self.stat_bmp, self._stat_position)
-        handle_pos = self._handle_pos[0] + self._stat_position[0], self._handle_pos[1] + self._stat_position[1]
-        dc.DrawBitmap(self.handle_bmp, handle_pos)
+        if self.inverted:
+            position = self._handle_max_pos[0] - self._handle_pos[0] + self._stat_position[0], \
+                         self._handle_max_pos[1] - self._handle_pos[1] + self._stat_position[1]
+        else:
+            position = self._handle_pos[0] + self._stat_position[0], \
+                         self._handle_pos[1] + self._stat_position[1]
+        dc.DrawBitmap(self.handle_bmp, position)
 
         if self.highlight and self.HasFocus():
             self.draw_highlight(dc, self.GetSize(), self.highlight_box)
@@ -81,13 +86,20 @@ class SingleSlider(ActiveImageControl):
     def on_keypress(self, event):
         if self.HasFocus():
             keycode = event.GetKeyCode()
-            index = self.index
+            index = vertical = self.vertical    # purely for readability
+            inverted = self.inverted            # "
             if keycode in [wx.WXK_RIGHT, wx.WXK_UP]:
-                handle_pos = self._handle_pos[index] + self._key_step
-                self.move_handle(handle_pos)
+                if (inverted and not vertical) or (vertical and not inverted):
+                    position = self._handle_pos[index] - self._key_step
+                else:
+                    position = self._handle_pos[index] + self._key_step
+                self.move_handle(position)
             elif keycode in [wx.WXK_LEFT, wx.WXK_DOWN]:
-                handle_pos = self._handle_pos[index] - self._key_step
-                self.move_handle(handle_pos)
+                if (inverted and not vertical) or (vertical and not inverted):
+                    position = self._handle_pos[index] + self._key_step
+                else:
+                    position = self._handle_pos[index] - self._key_step
+                self.move_handle(position)
             elif keycode == wx.WXK_SPACE:
                 self.reset_position()
             elif keycode == wx.WXK_TAB:
@@ -97,10 +109,13 @@ class SingleSlider(ActiveImageControl):
     def on_mouse_wheel(self, event):
         if not self.HasFocus():
             self.SetFocus()
-        index = self.index
+        index = self.vertical
         delta = event.GetWheelDelta()  # usually +/-120, but it's better not to assume
-        handle_pos = self._handle_pos[index] + (self._scroll_step * event.GetWheelRotation() // delta)
-        self.move_handle(handle_pos)
+        if not self.inverted and self.vertical:
+            position = self._handle_pos[index] - (self._scroll_step * event.GetWheelRotation() // delta)
+        else:
+            position = self._handle_pos[index] + (self._scroll_step * event.GetWheelRotation() // delta)
+        self.move_handle(position)
 
     def on_left_down(self, event):
         self.mouse_move(event.GetPosition())
@@ -113,12 +128,14 @@ class SingleSlider(ActiveImageControl):
     def mouse_move(self, mouse_pos):
         if not self.HasFocus():
             self.SetFocus()
-        index = self.index
-        handle_pos = mouse_pos[index] - self._handle_centre[index] - self._stat_padding[index]
-        self.move_handle(handle_pos)
+        index = self.vertical
+        position = mouse_pos[index] - self._handle_centre[index] - self._stat_padding[index]
+        if self.inverted:
+            position = self._handle_max_pos[index] - position
+        self.move_handle(position)
 
     def move_handle(self, pos):
-        if self.index:
+        if self.vertical:
             self.set_position((self._handle_pos[0], pos))
         else:
             self.set_position((pos, self._handle_pos[1]))
@@ -173,7 +190,7 @@ class SingleSlider(ActiveImageControl):
         parsed_pos = self._parse_limits(pos, self._handle_max_pos)
         if parsed_pos != self._handle_pos:
             self._handle_pos = parsed_pos
-            wx.PostEvent(self, ss_cmd_event(id=self.GetId(), state=self.value))
+            wx.PostEvent(self, ss_cmd_event(id=self.GetId(), value=self.value))
             self._refresh()
 
     def reset_position(self, animate=True):
@@ -182,12 +199,12 @@ class SingleSlider(ActiveImageControl):
     # Properties #
     @property
     def value(self):
-        value = self._handle_pos[self.index] / self._handle_max_pos[self.index]
+        value = self._handle_pos[self.vertical] / self._handle_max_pos[self.vertical]
         return value  # as percentage
 
     @value.setter
     def value(self, percent):
-        if self.index:
+        if self.vertical:
             self.set_position((self._handle_max_pos[0], percent * self._handle_max_pos[1]))
         else:
             self.set_position((percent * self._handle_max_pos[0], self._handle_max_pos[1]))
@@ -200,7 +217,7 @@ class SingleSlider(ActiveImageControl):
         if not animate:
             self.set_position(destination)
         else:
-            index = self.index
+            index = self.vertical
             curr_pos = self._handle_pos[index]  # for horizontal movement, [1] for vertical...
             max_pos = self._handle_max_pos[index]
             def_pos = destination[index]
@@ -215,7 +232,6 @@ class SingleSlider(ActiveImageControl):
                     self.Update()
                     if i != 0:
                         time.sleep(ptw.easeInQuart(abs((curr_pos - i + 1) / diff)) / int((max_pos - def_pos) * 0.75))
-                        print(int((max_pos - def_pos) * 0.75))
                         # TODO don't like sleeping the tween - threading version, maybe use position not time
                         # Also maybe extend function for clicking on a point animation
                 #         print(time.perf_counter() - start)
@@ -223,11 +239,11 @@ class SingleSlider(ActiveImageControl):
 
     def _parse_limits(self, position, max_pos):
         parsed_position = position
-        index = self.index
+        index = self.vertical
         if position[index] > max_pos[index]:
             return max_pos
         elif position[index] < 0:
-            if self.index:
+            if self.vertical:
                 return max_pos[0], 0
             else:
                 return 0, max_pos[1]

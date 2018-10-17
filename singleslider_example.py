@@ -15,7 +15,9 @@ class ICPanel(ImageControlPanel):
         self._populate()
 
         self.Bind(EVT_SS_CHANGE, self.on_slider_change, id=self.slide.GetId())
+        self.Bind(EVT_SS_CHANGE, self.on_islider_change, id=self.islide.GetId())
         self.Bind(EVT_SS_CHANGE, self.on_vslider_change, id=self.vslide.GetId())
+        self.Bind(EVT_SS_CHANGE, self.on_ivslider_change, id=self.ivslide.GetId())
 
     def _populate(self):
         panel_sizer = wx.BoxSizer(wx.VERTICAL)
@@ -24,8 +26,12 @@ class ICPanel(ImageControlPanel):
         top_sizer.Add((0, 0), 1, wx.EXPAND, 5)
         self.Text1 = wx.StaticText(self, wx.ID_ANY, "Horizontal", wx.DefaultPosition, wx.DefaultSize, 0)
         self.Text2 = wx.StaticText(self, wx.ID_ANY, "Vertical", wx.DefaultPosition, wx.DefaultSize, 0)
+        self.Text3 = wx.StaticText(self, wx.ID_ANY, "Vertical", wx.DefaultPosition, wx.DefaultSize, 0)
+        self.Text4 = wx.StaticText(self, wx.ID_ANY, "Horizontal", wx.DefaultPosition, wx.DefaultSize, 0)
         top_sizer.Add(self.Text2, 0, wx.ALL, 10)
+        top_sizer.Add(self.Text3, 0, wx.ALL, 10)
         top_sizer.Add(self.Text1, 0, wx.ALL, 10)
+        top_sizer.Add(self.Text4, 0, wx.ALL, 10)
         top_sizer.Add((0, 0), 1, wx.EXPAND, 5)
 
         mid_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -46,6 +52,20 @@ class ICPanel(ImageControlPanel):
         self.slide.highlight_box = ((0, 0), (20, 40))
         mid_sizer.Add(self.slide, 0, 0, 10)
 
+        # Add a single inverted horizontal slider control #
+        slider_pair = (
+            wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1.png')),
+            wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1_handle.png')))
+        self.islide = SingleSlider(self, slider_pair, is_inverted=True)
+        self.islide.set_padding((30, 60))
+        self.islide.set_offset((10, 9))
+        self.islide.set_default_pos((0, 0))
+        self.islide.set_max((210, 0))
+        self.islide.set_step(2, 4)
+        self.islide.set_highlighting()
+        self.islide.highlight_box = ((0, 0), (20, 40))
+        mid_sizer.Add(self.islide, 0, 0, 10)
+
         mid_sizer.Add((0, 0), 1, wx.EXPAND, 5)
 
         bot_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -55,7 +75,7 @@ class ICPanel(ImageControlPanel):
         slider_pair = (
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1v.png')),
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1_handle.png')))
-        self.vslide = SingleSlider(self, slider_pair, isvertical=True)
+        self.vslide = SingleSlider(self, slider_pair, is_vertical=True, is_inverted=False)
         self.vslide.set_padding((30, 10))
         self.vslide.set_offset((8, 10))
         self.vslide.set_default_pos((0, 0))
@@ -64,6 +84,20 @@ class ICPanel(ImageControlPanel):
         self.vslide.set_highlighting()
         self.vslide.highlight_box = ((0, 0), (0, 0))
         bot_sizer.Add(self.vslide, 0, 0, 10)
+
+        # Add a single inverted vertical slider control #
+        slider_pair = (
+            wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1v.png')),
+            wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1_handle.png')))
+        self.ivslide = SingleSlider(self, slider_pair, is_vertical=True, is_inverted=True)
+        self.ivslide.set_padding((30, 10))
+        self.ivslide.set_offset((8, 10))
+        self.ivslide.set_default_pos((0, 0))
+        self.ivslide.set_max((0, 210))
+        self.ivslide.set_step(2, 4)
+        self.ivslide.set_highlighting()
+        self.ivslide.highlight_box = ((0, 0), (0, 0))
+        bot_sizer.Add(self.ivslide, 0, 0, 10)
 
         bot_sizer.Add((0, 0), 1, wx.EXPAND, 5)
 
@@ -75,11 +109,19 @@ class ICPanel(ImageControlPanel):
         self.Layout()
 
     def on_slider_change(self, event):
-        self.Text1.SetLabel(str(int(event.state * 100)))
+        self.Text1.SetLabel(str(int(event.value * 100)))
+        event.Skip()
+
+    def on_islider_change(self, event):
+        self.Text4.SetLabel(str(int(event.value * 100)))
         event.Skip()
 
     def on_vslider_change(self, event):
-        self.Text2.SetLabel(str(int(event.state * 100)))
+        self.Text2.SetLabel(str(int(event.value * 100)))
+        event.Skip()
+
+    def on_ivslider_change(self, event):
+        self.Text3.SetLabel(str(int(event.value * 100)))
         event.Skip()
 
     def __del__(self):
