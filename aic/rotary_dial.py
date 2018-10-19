@@ -218,9 +218,7 @@ class RotaryDial(ActiveImageControl):
         self.Refresh(True, (wx.Rect(self._dynam_pos, self._dynam_size)))
 
     def _animated_reset(self, animate=True):
-        if not animate:
-            self.set_angle(self.pointer_default)
-        else:
+        if animate:
             curr_pos = int(self._pointer_angle)
             max_pos = self.pointer_max_angle
             def_pos = self.pointer_default
@@ -234,8 +232,8 @@ class RotaryDial(ActiveImageControl):
                         time.sleep(ptw.easeInQuart(abs((curr_pos - i + 1) / diff)) / int(max_pos - def_pos * 0.75))
                         # TODO don't like sleeping the tween - threading version, maybe use position not time
         # Also extend function for clicking on a point animation
-                self.set_angle(def_pos)
-                self._pointer_limit_hit = None
+        self.set_angle(self.pointer_default)
+        self._pointer_limit_hit = None
 
     def _parse_limits(self, angle, max_angle):
         parsed_angle = angle

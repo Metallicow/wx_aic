@@ -220,9 +220,7 @@ class SimpleSlider(ActiveImageControl):
 
     # Helper methods #
     def _animate(self, destination, animate=True):
-        if not animate:
-            self.set_position(destination)
-        else:
+        if animate:
             index = self.vertical
             curr_pos = self._handle_pos[index]  # for horizontal movement, [1] for vertical...
             max_pos = self._handle_max_pos[index]
@@ -241,9 +239,7 @@ class SimpleSlider(ActiveImageControl):
                         # TODO don't like sleeping the tween - threading version, maybe use position not time
                         # Also maybe extend function for clicking on a point animation
                 #         print(time.perf_counter() - start)
-                print(self._handle_default)
-                print(destination)
-                self.set_position(destination)
+        self.set_position(destination)
 
     def _validate_limits(self, position, max_pos):
         index = self.vertical

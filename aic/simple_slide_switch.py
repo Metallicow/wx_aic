@@ -252,7 +252,7 @@ class SimpleSlideSwitch(ActiveImageControl):
             self._handle_pos = valid_pos
             self.Refresh(True)
 
-    def reset_position(self, animate=True):
+    def reset_position(self, animate=False):
         self._animate(self._handle_default, animate)  # only use of handle_default - remove?
 
     # Properties #
@@ -266,9 +266,7 @@ class SimpleSlideSwitch(ActiveImageControl):
 
     # Helper methods #
     def _animate(self, destination, animate=True):
-        if not animate:
-            self.set_position(destination)
-        else:
+        if animate:
             index = self.vertical
             curr_pos = self._handle_pos[index]  # for horizontal movement, [1] for vertical...
             max_pos = self._handle_max_pos[index]
@@ -285,7 +283,7 @@ class SimpleSlideSwitch(ActiveImageControl):
                         time.sleep(ptw.easeInQuart(abs((curr_pos - i + 1) / diff)) / int((max_pos - def_pos) * 0.75))
                         # TODO don't like sleeping the tween - threading version, maybe use position not time
                         # Also maybe extend function for clicking on a point animation
-                self.set_tick(self._tick_default)
+        self.set_tick(self._tick_default)
 
     def _validate_limits(self, position, max_pos):
         index = self.vertical
