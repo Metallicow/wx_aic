@@ -10,6 +10,7 @@ from .toggle_switch import ToggleSwitch
 from .moment_switch import MomentSwitch
 from .rotary_dial import RotaryDial
 from .rotary_switch import RotarySwitch
-from .single_slider import SingleSlider
+from .simple_slider import SimpleSlider
+from .simple_slide_switch import SimpleSlideSwitch
 from .range_slider import RangeSlider
 from .utilities import dc_to_bitmap, save_bmp_to_file

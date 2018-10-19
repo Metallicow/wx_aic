@@ -33,8 +33,8 @@ class RotarySwitch(ActiveImageControl):
         self.parent = parent
         self.stat_bmp = bitmaps[0]
         self._stat_size = self.stat_bmp.Size
-        # self.stat_width = self.stat_bmp.Size.width   # not needed?
-        # self.stat_height = self.stat_bmp.Size.height   # not needed?
+        # self.stat_width = self.static_bmp.Size.width   # not needed?
+        # self.stat_height = self.static_bmp.Size.height   # not needed?
         self._stat_centre = rect_centre(self._stat_size)
         self.stat_padding = (0, 0)
         self._stat_position = self.GetPosition() + self.stat_padding

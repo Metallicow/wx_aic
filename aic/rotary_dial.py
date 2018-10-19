@@ -24,6 +24,11 @@ class RotaryDial(ActiveImageControl):
                         Even pixel dimensions will rotate slightly better (eg 50x50 not 51x51)
                         The rotating bitmap must be smaller than the base bitmap
                         It might be possible to do a partially exposed knob using a mask???
+
+        EVT_RD_CHANGE: returns .value: float ->  the degrees difference from the 'zero' point of the dial
+                                                Positive values only, in clockwise rotation
+                                                For example: if the zero point is at 9 0'clock and the handle is at
+                                                             6 0'clock, .value will return: 270 (degrees)
         """
 
         super().__init__(parent, *args, **kwargs)
@@ -33,8 +38,8 @@ class RotaryDial(ActiveImageControl):
         self.parent = parent
         self.stat_bmp = bitmaps[0]
         self._stat_size = self.stat_bmp.Size
-        # self.stat_width = self.stat_bmp.Size.width   # not needed?
-        # self.stat_height = self.stat_bmp.Size.height   # not needed?
+        # self.stat_width = self.static_bmp.Size.width   # not needed?
+        # self.stat_height = self.static_bmp.Size.height   # not needed?
         self._stat_centre = rect_centre(self._stat_size)
         self.stat_padding = (0, 0)
         self._stat_position = self.GetPosition() + self.stat_padding
