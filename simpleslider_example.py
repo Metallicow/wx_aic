@@ -46,7 +46,7 @@ class ICPanel(ImageControlPanel):
         self.slide.set_padding((30, 60))
         self.slide.set_offset((10, 9))
         self.slide.set_max((210, 0))
-        self.slide.set_default_pos((50, 0))
+        self.slide.set_default_pos((210, 0))
         self.slide.set_step(2, 4)
         self.slide.set_highlighting()
         self.slide.highlight_box = ((0, 0), (20, 40))

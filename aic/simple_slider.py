@@ -163,26 +163,28 @@ class SimpleSlider(ActiveImageControl):
 
     def set_default_pos(self, pos=(0, 0)):
         """ Set the default position for the handle, resetting will place the handle at this point"""
-        if 0 <= pos[0] <= self._static_size[0]:  # checks for less than zero and great than the image width
+        if 0 <= pos[0] <= self._static_size[0]:  # checks that position is within image boundary
             self.set_position(pos)
             self._handle_default = self._handle_pos
         else:
             raise ValueError('The position value is not within the boundary of the slider widget')
 
     def set_max(self, pos=(0, 0)):
-        if 0 <= pos[0] <= self._static_size[0]:  # checks for less than zero and great than the image width
+        """ Set the increment value (in degrees) for the scroll-wheel and cursor keys"""
+        if 0 <= pos[0] <= self._static_size[0]:  # checks that position is within image boundary
             self._handle_max_pos = pos
         else:
             raise ValueError('The position value is not within the boundary of the slider widget')
 
     def set_offset(self, pos=(0, 0)):
+        """ Set the pixel offset from top left position for the slider axis """
         if (0 <= pos[0] <= self._static_size[0]) and (0 <= pos[1] <= self._static_size[1]):
             self._handle_offset = pos
         else:
             raise ValueError('The position value is not within the boundary of the slider widget')
 
     def set_step(self, scroll=1, key=1):
-        """ Set the increment value (in degrees) for the scroll-wheel and cursor keys"""
+        """ Set the increment value for the scroll-wheel and cursor keys"""
         self.set_scroll_step(scroll)
         self.set_key_step(key)
 
@@ -218,7 +220,7 @@ class SimpleSlider(ActiveImageControl):
         else:
             self.set_position((percent * self._handle_max_pos[0], self._handle_max_pos[1]))
 
-    # Helper methods #
+    # Animation methods #
     def _animate(self, destination, animate=True):
         if animate:
             index = self.vertical
@@ -228,19 +230,18 @@ class SimpleSlider(ActiveImageControl):
             diff = def_pos - curr_pos
             if diff:
                 step = 4 * int(diff / abs(diff))
-                # start = time.perf_counter()
                 for i in range(curr_pos, def_pos, step):
                     self.move_handle(i)
                     # because we are using sleep in a loop, we are not returning control to the main loop
                     # so we need to call update() to refresh the screen immediately - ie to 'animate'
                     self.Update()
                     if i != 0:
-                        time.sleep(ptw.easeInQuart(abs((curr_pos - i + 1) / diff)) / int((max_pos - def_pos) * 0.75))
+                        time.sleep(ptw.easeInQuart(abs((curr_pos - i + 1) / diff)) / int(max_pos * 0.85))
                         # TODO don't like sleeping the tween - threading version, maybe use position not time
                         # Also maybe extend function for clicking on a point animation
-                #         print(time.perf_counter() - start)
         self.set_position(destination)
 
+    # Helper methods #
     def _validate_limits(self, position, max_pos):
         index = self.vertical
         if position[index] > max_pos[index]:

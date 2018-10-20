@@ -11,7 +11,7 @@ sss_cmd_event, EVT_SSS_CHANGE = NewCommandEvent()
 
 class SimpleSlideSwitch(ActiveImageControl):
 
-    def __init__(self, parent, bitmaps, is_vertical=False, is_inverted=False, switch_ticks=2,
+    def __init__(self, parent, bitmaps, is_vertical=False, is_inverted=False, switch_ticks=2, max_point=None,
                  *args, **kwargs):
         """
         An Image Control for presenting a rotary dial style, (eg a knob or dial type control)
@@ -50,13 +50,13 @@ class SimpleSlideSwitch(ActiveImageControl):
         self._handle_centre = rect_centre(self._handle_size)
         self._handle_offset = (0, 0)  # x,y offset for positioning handle relative to the zero position and axis
         self._handle_default = wx.Point(0, 0)  # x,y co-ordinate
-        self._handle_max_pos = wx.Point(self._static_size[0], self._static_size[1])  # max pos in relation to zero pos
+        self._handle_max_pos = self._set_max(max_point)  # max pos in relation to zero pos
         self._handle_pos = wx.Point(self._handle_offset)  # co-ordinate for actual position of handle
 
         self._switch_ticks = switch_ticks  # either int or list of ints
         self._ticklist = self.make_ticklist(self._switch_ticks)  # list of tick values (not wx.Points)
-        self._curr_tick = 0  # ???
-        self._tick_default = 0  # get rid of handle default???
+        self._curr_tick = 0
+        self._tick_default = 0
 
         self._scroll_step = 1
         self._cursor_key_step = 1
@@ -181,7 +181,6 @@ class SimpleSlideSwitch(ActiveImageControl):
                     tick_list.append(int(tick * max_))  # horizontal
             else:
                 raise IndexError(f'switch_ticks: Expected 2 or more ticks')
-        print(tick_list)
         return tick_list
 
     # Getters and Setters #
@@ -190,20 +189,16 @@ class SimpleSlideSwitch(ActiveImageControl):
         self._static_padding = padding
         self._static_pos = self.GetPosition() + self._static_padding
 
-    def set_max(self, pos=(0, 0)):
+    def _set_max(self, point):
         """ Sets the co-ordinates for the maximum position """
-        if 0 <= pos[0] <= self._static_size[0]:  # checks for less than zero and great than the image width
-            if self._handle_max_pos != pos:
-                self._handle_max_pos = pos
-                self._ticklist = self.make_ticklist(self._switch_ticks)  # redo tick calculation
-        else:
-            raise ValueError('The position value is not within the boundary of the slider widget')
+        if not point:
+            return wx.Point(self._static_size[0], self._static_size[1])
+        if self._within_boundary(point):
+            return point
 
-    def set_offset(self, pos=(0, 0)):
-        if (0 <= pos[0] <= self._static_size[0]) and (0 <= pos[1] <= self._static_size[1]):
-            self._handle_offset = pos
-        else:
-            raise ValueError('The position value is not within the boundary of the slider widget')
+    def set_offset(self, point=(0, 0)):
+        if self._within_boundary(point):
+            self._handle_offset = point
 
     def set_step(self, scroll=1, key=1):
         """ Set the increment value (in degrees) for the scroll-wheel and cursor keys"""
@@ -221,11 +216,9 @@ class SimpleSlideSwitch(ActiveImageControl):
     def set_default_tick(self, tick=0):
         """ Set the default position for the handle, resetting will place the handle at this point"""
         if 0 <= tick < len(self._ticklist):  # make sure the tick value is within range
+            self.set_tick(tick)
             self._tick_default = tick
-            if self.vertical:
-                self._handle_default = (self._handle_pos[0], self._ticklist[tick])
-            else:
-                self._handle_default = (self._ticklist[tick], self._handle_pos[1])
+            self._handle_default = self._handle_pos
         else:
             raise ValueError('The tick value is not within range')
 
@@ -236,7 +229,6 @@ class SimpleSlideSwitch(ActiveImageControl):
         elif tick >= len(self._ticklist):
             tick = len(self._ticklist) - 1
         if tick != self._curr_tick:
-            print(f'good - tick is{tick}')
             self._curr_tick = tick
             if self.vertical:
                 self.set_position((self._handle_pos[0], self._ticklist[tick]))
@@ -252,8 +244,8 @@ class SimpleSlideSwitch(ActiveImageControl):
             self._handle_pos = valid_pos
             self.Refresh(True)
 
-    def reset_position(self, animate=False):
-        self._animate(self._handle_default, animate)  # only use of handle_default - remove?
+    def reset_position(self, animate=True):
+        self._animate(self._handle_default, animate)
 
     # Properties #
     @property
@@ -264,11 +256,11 @@ class SimpleSlideSwitch(ActiveImageControl):
     def value(self, tick):
         self.set_tick(tick)
 
-    # Helper methods #
+    # Animation methods #
     def _animate(self, destination, animate=True):
         if animate:
             index = self.vertical
-            curr_pos = self._handle_pos[index]  # for horizontal movement, [1] for vertical...
+            curr_pos = self._handle_pos[index]
             max_pos = self._handle_max_pos[index]
             def_pos = destination[index]
             diff = def_pos - curr_pos
@@ -280,11 +272,12 @@ class SimpleSlideSwitch(ActiveImageControl):
                     # so we need to call update() to refresh the screen immediately - ie to 'animate'
                     self.Update()
                     if i != 0:
-                        time.sleep(ptw.easeInQuart(abs((curr_pos - i + 1) / diff)) / int((max_pos - def_pos) * 0.75))
-                        # TODO don't like sleeping the tween - threading version, maybe use position not time
+                        time.sleep(ptw.easeInQuart(abs((curr_pos - i + 1) / diff)) / int(max_pos * 0.85))
+                        # TODO don't like sleeping the tween - threading version?
                         # Also maybe extend function for clicking on a point animation
         self.set_tick(self._tick_default)
 
+    # Helper methods #
     def _validate_limits(self, position, max_pos):
         index = self.vertical
         if position[index] > max_pos[index]:
@@ -295,6 +288,13 @@ class SimpleSlideSwitch(ActiveImageControl):
             else:
                 return 0, max_pos[1]
         return position
+
+    def _within_boundary(self,point):
+        """ checks that a point is within image boundary """
+        if (0 <= point[0] <= self._static_size[0]) and (0 <= point[1] <= self._static_size[1]):
+            return True
+        else:
+            raise ValueError('The position value is not within the boundary of the slider widget')
 
 
 def rect_centre(size, origin=(0, 0)):

@@ -37,7 +37,7 @@ class ICPanel(ImageControlPanel):
         self.dial.set_rotation_point_offset((-1, 0))
         self.dial.set_zero_angle_offset(-225)
         self.dial.set_pointer_rot_offset(-135)
-        self.dial.set_initial_angle(0)
+        self.dial.set_initial_angle(120)
         self.dial.set_max_angle(270)
         self.dial.set_step(2, 4)
         self.dial.set_highlighting()

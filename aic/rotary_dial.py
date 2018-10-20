@@ -229,7 +229,7 @@ class RotaryDial(ActiveImageControl):
                     self.set_angle(i)
                     self.Update()  # in this case, the buffer won't empty until update() is called
                     if i != 0:
-                        time.sleep(ptw.easeInQuart(abs((curr_pos - i + 1) / diff)) / int(max_pos - def_pos * 0.75))
+                        time.sleep(ptw.easeInQuart(abs((curr_pos - i + 1) / diff)) / int(max_pos * 0.85))
                         # TODO don't like sleeping the tween - threading version, maybe use position not time
         # Also extend function for clicking on a point animation
         self.set_angle(self.pointer_default)

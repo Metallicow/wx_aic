@@ -16,8 +16,8 @@ class ICPanel(ImageControlPanel):
 
         self.Bind(EVT_SSS_CHANGE, self.on_slider_change, id=self.slide.GetId())
         self.Bind(EVT_SSS_CHANGE, self.on_islider_change, id=self.islide.GetId())
-        # self.Bind(EVT_SSS_CHANGE, self.on_vslider_change, id=self.vslide.GetId())
-        # self.Bind(EVT_SSS_CHANGE, self.on_ivslider_change, id=self.ivslide.GetId())
+        self.Bind(EVT_SSS_CHANGE, self.on_vslider_change, id=self.vslide.GetId())
+        self.Bind(EVT_SSS_CHANGE, self.on_ivslider_change, id=self.ivslide.GetId())
 
     def _populate(self):
         panel_sizer = wx.BoxSizer(wx.VERTICAL)
@@ -42,14 +42,12 @@ class ICPanel(ImageControlPanel):
         slider_pair = (
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1.png')),
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1_handle.png')))
-        self.slide = SimpleSlideSwitch(self, slider_pair,switch_ticks=6)
+        self.slide = SimpleSlideSwitch(self, slider_pair, switch_ticks=6, max_point=(210, 0))
         self.slide.set_padding((30, 60))
         self.slide.set_offset((10, 9))
-        self.slide.set_max((210, 0))
-        self.slide.set_default_tick(3)
+        self.slide.set_default_tick(0)
         self.slide.set_step(1, 1)
-
-        self.slide.set_tick(1)
+        # self.slide.set_tick(1)
         self.slide.set_highlighting()
         self.slide.highlight_box = ((0, 0), (20, 40))
         mid_sizer.Add(self.slide, 0, 0, 10)
@@ -58,11 +56,10 @@ class ICPanel(ImageControlPanel):
         slider_pair = (
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1.png')),
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1_handle.png')))
-        self.islide = SimpleSlideSwitch(self, slider_pair, is_inverted=True, switch_ticks=11)
+        self.islide = SimpleSlideSwitch(self, slider_pair, is_inverted=True, switch_ticks=11, max_point=(210, 0))
         self.islide.set_padding((30, 60))
         self.islide.set_offset((10, 9))
-        self.islide.set_max((210, 0))
-        self.islide.set_step(1,1)
+        self.islide.set_step(1, 1)
         self.islide.set_default_tick(2)
         self.islide.set_highlighting()
         self.islide.highlight_box = ((0, 0), (20, 40))
@@ -74,32 +71,30 @@ class ICPanel(ImageControlPanel):
         bot_sizer.Add((0, 0), 1, wx.EXPAND, 5)
 
         # Add a single vertical slider control #
-        # slider_pair = (
-        #     wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1v.png')),
-        #     wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1_handle.png')))
-        # self.vslide = SimpleSlideSwitch(self, slider_pair, is_vertical=True, is_inverted=False)
-        # self.vslide.set_padding((30, 10))
-        # self.vslide.set_offset((8, 10))
-        # self.vslide.set_default_pos((0, 0))
-        # self.vslide.set_max((0, 210))
-        # self.vslide.set_step(1, 1)
-        # self.vslide.set_highlighting()
-        # self.vslide.highlight_box = ((0, 0), (0, 0))
-        # bot_sizer.Add(self.vslide, 0, 0, 10)
+        slider_pair = (
+            wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1v.png')),
+            wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1_handle.png')))
+        self.vslide = SimpleSlideSwitch(self, slider_pair, True, is_inverted=False, switch_ticks=51, max_point=(0, 210))
+        self.vslide.set_padding((30, 10))
+        self.vslide.set_offset((8, 10))
+        self.vslide.set_default_tick(48)
+        self.vslide.set_step(1, 1)
+        self.vslide.set_highlighting()
+        self.vslide.highlight_box = ((0, 0), (0, 0))
+        bot_sizer.Add(self.vslide, 0, 0, 10)
 
         # Add a single inverted vertical slider control #
-        # slider_pair = (
-        #     wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1v.png')),
-        #     wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1_handle.png')))
-        # self.ivslide = SimpleSlideSwitch(self, slider_pair, is_vertical=True, is_inverted=True)
-        # self.ivslide.set_padding((30, 10))
-        # self.ivslide.set_offset((8, 10))
-        # self.ivslide.set_default_pos((0, 0))
-        # self.ivslide.set_max((0, 210))
-        # self.ivslide.set_step(1, 1)
-        # self.ivslide.set_highlighting()
-        # self.ivslide.highlight_box = ((0, 0), (0, 0))
-        # bot_sizer.Add(self.ivslide, 0, 0, 10)
+        slider_pair = (
+            wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1v.png')),
+            wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1_handle.png')))
+        self.ivslide = SimpleSlideSwitch(self, slider_pair, True, True, switch_ticks=101, max_point=(0, 210))
+        self.ivslide.set_padding((30, 10))
+        self.ivslide.set_offset((8, 10))
+        self.ivslide.set_step(1, 1)
+        self.ivslide.set_default_tick(20)
+        self.ivslide.set_highlighting()
+        self.ivslide.highlight_box = ((0, 0), (0, 0))
+        bot_sizer.Add(self.ivslide, 0, 0, 10)
 
         bot_sizer.Add((0, 0), 1, wx.EXPAND, 5)
 
@@ -111,19 +106,19 @@ class ICPanel(ImageControlPanel):
         self.Layout()
 
     def on_slider_change(self, event):
-        self.Text1.SetLabel(str(int(event.value)))
+        self.Text1.SetLabel(str(event.value))
         event.Skip()
 
     def on_islider_change(self, event):
-        self.Text4.SetLabel(str(int(event.value)))
+        self.Text4.SetLabel(str(event.value))
         event.Skip()
 
     def on_vslider_change(self, event):
-        self.Text2.SetLabel(str(int(event.value)))
+        self.Text2.SetLabel(str(event.value))
         event.Skip()
 
     def on_ivslider_change(self, event):
-        self.Text3.SetLabel(str(int(event.value)))
+        self.Text3.SetLabel(str(event.value))
         event.Skip()
 
     def __del__(self):
