@@ -12,18 +12,24 @@ class Padding:
     """
 
     def __init__(self, widths: tuple = (0, 0, 0, 0)):
-        length = len(widths)
-        if length < 5:
-            if length == 1:
-                p = widths
-                self.pad = (p, p, p, p)
-            elif length == 2:
-                tb, rl = widths
-                self.pad = (tb, rl, tb, rl)
-            elif length == 3:
-                t, rl, b = widths
-                self.pad = (t, rl, b, rl)
-            else:
-                self.pad = tuple(widths)
+        self.padding = make_padding(widths)
+
+
+def make_padding(widths: tuple = (0, 0, 0, 0)):
+    """ returns a tuple of 4 integers representing the amount of padding-> Top; Right; Bottom; Left """
+    length = len(widths)
+    if length < 5:
+        if length == 1:
+            p = widths[0]
+            padding = (p, p, p, p)
+        elif length == 2:
+            tb, rl = widths
+            padding = (tb, rl, tb, rl)
+        elif length == 3:
+            t, rl, b = widths
+            padding = (t, rl, b, rl)
         else:
-            raise ValueError('Too many values passed: 1 - 4 are expected')
+            padding = tuple(widths)
+    else:
+        raise ValueError('Too many values passed: 1 - 4 are expected')
+    return padding

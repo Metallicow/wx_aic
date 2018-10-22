@@ -11,7 +11,7 @@ sss_cmd_event, EVT_SSS_CHANGE = NewCommandEvent()
 
 class SimpleSlideSwitch(ActiveImageControl):
 
-    def __init__(self, parent, bitmaps, is_vertical=False, is_inverted=False, switch_ticks=2, max_point=None,
+    def __init__(self, parent, bitmaps, is_vertical=False, is_inverted=False,  max_pos=None, switch_ticks=2,
                  *args, **kwargs):
         """
         An Image Control for presenting a rotary dial style, (eg a knob or dial type control)
@@ -50,7 +50,7 @@ class SimpleSlideSwitch(ActiveImageControl):
         self._handle_centre = rect_centre(self._handle_size)
         self._handle_offset = (0, 0)  # x,y offset for positioning handle relative to the zero position and axis
         self._handle_default = wx.Point(0, 0)  # x,y co-ordinate
-        self._handle_max_pos = self._set_max(max_point)  # max pos in relation to zero pos
+        self._handle_max_pos = self._set_max(max_pos)  # max pos in relation to zero pos
         self._handle_pos = wx.Point(self._handle_offset)  # co-ordinate for actual position of handle
 
         self._switch_ticks = switch_ticks  # either int or list of ints
@@ -189,12 +189,19 @@ class SimpleSlideSwitch(ActiveImageControl):
         self._static_padding = padding
         self._static_pos = self.GetPosition() + self._static_padding
 
-    def _set_max(self, point):
-        """ Sets the co-ordinates for the maximum position """
-        if not point:
-            return wx.Point(self._static_size[0], self._static_size[1])
-        if self._within_boundary(point):
-            return point
+    def _set_max(self, pos):
+        """ Set the maximum pixel position value for the handle """
+        if not pos:
+            pos = max(self._static_size[0], self._static_size[1])
+            print(pos)
+        if self.vertical:
+            point = (0, pos)
+            if self._within_boundary(point):
+                return point
+        else:
+            point = (pos, 0)
+            if self._within_boundary(point):
+                return point
 
     def set_offset(self, point=(0, 0)):
         if self._within_boundary(point):

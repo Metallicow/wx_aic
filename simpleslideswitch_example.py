@@ -42,7 +42,7 @@ class ICPanel(ImageControlPanel):
         slider_pair = (
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1.png')),
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1_handle.png')))
-        self.slide = SimpleSlideSwitch(self, slider_pair, switch_ticks=6, max_point=(210, 0))
+        self.slide = SimpleSlideSwitch(self, slider_pair, switch_ticks=6, max_pos=210)
         self.slide.set_padding((30, 60))
         self.slide.set_offset((10, 9))
         self.slide.set_default_tick(0)
@@ -56,7 +56,7 @@ class ICPanel(ImageControlPanel):
         slider_pair = (
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1.png')),
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1_handle.png')))
-        self.islide = SimpleSlideSwitch(self, slider_pair, is_inverted=True, switch_ticks=11, max_point=(210, 0))
+        self.islide = SimpleSlideSwitch(self, slider_pair, is_inverted=True, switch_ticks=11, max_pos=210)
         self.islide.set_padding((30, 60))
         self.islide.set_offset((10, 9))
         self.islide.set_step(1, 1)
@@ -74,7 +74,7 @@ class ICPanel(ImageControlPanel):
         slider_pair = (
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1v.png')),
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1_handle.png')))
-        self.vslide = SimpleSlideSwitch(self, slider_pair, True, is_inverted=False, switch_ticks=51, max_point=(0, 210))
+        self.vslide = SimpleSlideSwitch(self, slider_pair, True, is_inverted=False, switch_ticks=51, max_pos=210)
         self.vslide.set_padding((30, 10))
         self.vslide.set_offset((8, 10))
         self.vslide.set_default_tick(48)
@@ -87,7 +87,7 @@ class ICPanel(ImageControlPanel):
         slider_pair = (
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1v.png')),
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1_handle.png')))
-        self.ivslide = SimpleSlideSwitch(self, slider_pair, True, True, switch_ticks=101, max_point=(0, 210))
+        self.ivslide = SimpleSlideSwitch(self, slider_pair, True, True, switch_ticks=101, max_pos=210)
         self.ivslide.set_padding((30, 10))
         self.ivslide.set_offset((8, 10))
         self.ivslide.set_step(1, 1)

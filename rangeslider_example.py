@@ -1,11 +1,9 @@
 import os
 import wx
 import wx.lib.inspection
-
 from aic import ImageControlPanel, ImageControlFrame
-from aic import SimpleSlider
-from aic.simple_slider import EVT_SS_CHANGE
-from aic.utilities import Padding
+from aic import RangeSlider
+from aic.range_slider import EVT_RS_CHANGE
 
 RESOURCES = 'res'
 
@@ -16,10 +14,10 @@ class ICPanel(ImageControlPanel):
 
         self._populate()
 
-        self.Bind(EVT_SS_CHANGE, self.on_slider_change, id=self.slide.GetId())
-        # self.Bind(EVT_SS_CHANGE, self.on_islider_change, id=self.islide.GetId())
-        self.Bind(EVT_SS_CHANGE, self.on_vslider_change, id=self.vslide.GetId())
-        # self.Bind(EVT_SS_CHANGE, self.on_ivslider_change, id=self.ivslide.GetId())
+        self.Bind(EVT_RS_CHANGE, self.on_slider_change, id=self.slide.GetId())
+        self.Bind(EVT_RS_CHANGE, self.on_islider_change, id=self.islide.GetId())
+        self.Bind(EVT_RS_CHANGE, self.on_vslider_change, id=self.vslide.GetId())
+        self.Bind(EVT_RS_CHANGE, self.on_ivslider_change, id=self.ivslide.GetId())
 
     def _populate(self):
         panel_sizer = wx.BoxSizer(wx.VERTICAL)
@@ -42,25 +40,27 @@ class ICPanel(ImageControlPanel):
 
         # Add a single horizontal slider control #
         slider_pair = (
-            wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1.png')),
-            wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1_handle.png')))
-        self.slide = SimpleSlider(self, slider_pair, max_pos=210)
-        self.slide.set_padding((60,30))
-        self.slide.set_offset((0,0))
-        self.slide.set_default_pos(110) # TODO Should this be a % value not coordinate??
+            wx.Bitmap(os.path.join(RESOURCES, 'sticky_range.png')),
+            wx.Bitmap(os.path.join(RESOURCES, 'sticky_range_handle.png')))
+        self.slide = RangeSlider(self, slider_pair)
+        self.slide.set_padding((30, 60))
+        self.slide.set_offset((10, 9))
+        self.slide.set_max((210, 0))
+        self.slide.set_default_pos((210, 0))
         self.slide.set_step(2, 4)
         self.slide.set_highlighting()
         self.slide.highlight_box = ((0, 0), (20, 40))
         mid_sizer.Add(self.slide, 0, 0, 10)
 
-        # # Add a single inverted horizontal slider control #
+        # Add a single inverted horizontal slider control #
         slider_pair = (
-            wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1.png')),
-            wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1_handle.png')))
-        self.islide = SimpleSlider(self, slider_pair, is_inverted=True, max_pos=200)
+            wx.Bitmap(os.path.join(RESOURCES, 'sticky_range.png')),
+            wx.Bitmap(os.path.join(RESOURCES, 'sticky_range_handle.png')))
+        self.islide = RangeSlider(self, slider_pair, is_inverted=True)
         self.islide.set_padding((30, 60))
-        # self.islide.set_offset((10, 9))
-        self.islide.set_default_pos(100)
+        self.islide.set_offset((10, 9))
+        self.islide.set_max((210, 0))
+        self.islide.set_default_pos((50, 0))
         self.islide.set_step(2, 4)
         self.islide.set_highlighting()
         self.islide.highlight_box = ((0, 0), (20, 40))
@@ -71,27 +71,30 @@ class ICPanel(ImageControlPanel):
         bot_sizer = wx.BoxSizer(wx.HORIZONTAL)
         bot_sizer.Add((0, 0), 1, wx.EXPAND, 5)
 
-        # # Add a single vertical slider control #
+        # Add a single vertical slider control #
         slider_pair = (
-            wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1v.png')),
-            wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1_handle.png')))
-        self.vslide = SimpleSlider(self, slider_pair, is_vertical=True, is_inverted=False, max_pos=210)
-        self.vslide.set_padding((50, 50))
-        self.vslide.set_default_pos(30)
+            wx.Bitmap(os.path.join(RESOURCES, 'sticky_rangev.png')),
+            wx.Bitmap(os.path.join(RESOURCES, 'sticky_range_handlev.png')))
+        self.vslide = RangeSlider(self, slider_pair, is_vertical=True, is_inverted=False)
+        self.vslide.set_padding((30, 10))
+        self.vslide.set_offset((8, 10))
+        self.vslide.set_max((0, 210))
+        self.vslide.set_default_pos((0, 51))
         self.vslide.set_step(2, 4)
         self.vslide.set_highlighting()
         self.vslide.highlight_box = ((0, 0), (0, 0))
         bot_sizer.Add(self.vslide, 0, 0, 10)
 
-        # # Add a single inverted vertical slider control #
+        # Add a single inverted vertical slider control #
         slider_pair = (
-            wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1v.png')),
-            wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1_handle.png')))
-        self.ivslide = SimpleSlider(self, slider_pair, is_vertical=True, is_inverted=True, max_pos=210)
+            wx.Bitmap(os.path.join(RESOURCES, 'sticky_rangev.png')),
+            wx.Bitmap(os.path.join(RESOURCES, 'sticky_range_handlev.png')))
+        self.ivslide = RangeSlider(self, slider_pair, is_vertical=True, is_inverted=True)
         self.ivslide.set_padding((30, 10))
         self.ivslide.set_offset((8, 10))
+        self.ivslide.set_max((0, 210))  # Set max position before setting default - just for initial .value * important
         self.ivslide.set_step(2, 4)
-        self.ivslide.set_default_pos(10)
+        self.ivslide.set_default_pos((0, 55))
         self.ivslide.set_highlighting()
         self.ivslide.highlight_box = ((0, 0), (0, 0))
         bot_sizer.Add(self.ivslide, 0, 0, 10)
@@ -106,19 +109,19 @@ class ICPanel(ImageControlPanel):
         self.Layout()
 
     def on_slider_change(self, event):
-        self.Text1.SetLabel(str(int(event.value * 100)))
+        self.Text1.SetLabel(str(int(event.value1 * 100)))
         event.Skip()
 
     def on_islider_change(self, event):
-        self.Text4.SetLabel(str(int(event.value * 100)))
+        self.Text4.SetLabel(str(int(event.value1 * 100)))
         event.Skip()
 
     def on_vslider_change(self, event):
-        self.Text2.SetLabel(str(int(event.value * 100)))
+        self.Text2.SetLabel(str(int(event.value1 * 100)))
         event.Skip()
 
     def on_ivslider_change(self, event):
-        self.Text3.SetLabel(str(int(event.value * 100)))
+        self.Text3.SetLabel(str(int(event.value1 * 100)))
         event.Skip()
 
     def __del__(self):
@@ -146,9 +149,9 @@ class StdPanel(wx.Panel):
 
         # Add a rotary dial control #
         slider_pair = (
-            wx.Bitmap(os.path.join(RESOURCES, 'sticky_knob1.png')),
-            wx.Bitmap(os.path.join(RESOURCES, 'sticky_knob1_mark.png')))
-        self.slider = SimpleSlider(self, slider_pair)
+            wx.Bitmap(os.path.join(RESOURCES, 'sticky_range.png')),
+            wx.Bitmap(os.path.join(RESOURCES, 'sticky_range_handle.png')))
+        self.slider = RangeSlider(self, slider_pair)
         mid_sizer.Add(self.slider, 0, 0, 10)
 
         mid_sizer.Add((0, 0), 1, wx.EXPAND, 5)
@@ -163,7 +166,7 @@ class StdPanel(wx.Panel):
         self.SetSizer(panel_sizer)
         self.Layout()
 
-        self.Bind(EVT_SS_CHANGE, self.on_dial_change, id=self.slider.GetId())
+        self.Bind(EVT_RS_CHANGE, self.on_dial_change, id=self.slider.GetId())
 
     def on_dial_change(self, event):
         self.Text1.SetLabel(str(event.state))

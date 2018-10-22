@@ -3,15 +3,15 @@ import time
 import wx
 from wx.lib.newevent import NewCommandEvent
 import pytweening as ptw
-
 from aic import ActiveImageControl
+from aic.utilities import make_padding
 
 ss_cmd_event, EVT_SS_CHANGE = NewCommandEvent()
 
 
 class SimpleSlider(ActiveImageControl):
 
-    def __init__(self, parent, bitmaps, is_vertical=False, is_inverted=False, *args, **kwargs):
+    def __init__(self, parent, bitmaps, is_vertical=False, is_inverted=False, max_pos=None, *args, **kwargs):
         """
         An Image Control for presenting a rotary dial style, (eg a knob or dial type control)
         It behaves similarly to a native control slider, except value is expressed as degrees (float)
@@ -21,7 +21,7 @@ class SimpleSlider(ActiveImageControl):
                         (the second will be the handle (pointer), preferably smaller than the static bitmap
                         If the handle is larger, you may need to compensate by adding padding to the slider
         :param is_vertical: Boolean - does the slider operate in a vertical orientation
-        :param is_inverted: Boolean - do the values need to be contra to the co-ordinate system
+        :param is_inverted: Boolean - does the slider operate contra to the co-ordinate system
                             Put simply:
                                 on a horizontal slider- True if the right-most position has a zero value
                                 on a vertical slider- True if the bottom-most position has a zero value
@@ -31,23 +31,24 @@ class SimpleSlider(ActiveImageControl):
 
         super().__init__(parent, *args, **kwargs)
         # No borders + Wants Chars - to grab (cursor) key input
-        self.SetWindowStyleFlag(wx.NO_BORDER | wx.WANTS_CHARS)
+        self.SetWindowStyleFlag(wx.WANTS_CHARS)
+        # self.SetWindowStyleFlag(wx.NO_BORDER | wx.WANTS_CHARS)
 
         self.parent = parent
         self.vertical = is_vertical
         self.inverted = is_inverted  # False for lt->rt & top->bot layouts; True for rt->lt & bot->top layouts
         self.stat_bmp = bitmaps[0]
         self._static_size = self.stat_bmp.Size
-        self._static_padding = (10, 10)
-        self._static_pos = wx.Point(self.GetPosition() + self._static_padding)
+        self._static_padding = make_padding()
+        self._static_pos = self._get_stat_pos()
 
         self.handle_bmp = bitmaps[1]
         self._handle_size = self.handle_bmp.Size
         self._handle_centre = rect_centre(self._handle_size)
-        self._handle_offset = (0, 0)  # x,y offset for positioning handle relative to the zero position
-        self._handle_max_pos = wx.Point(self._static_size[0], self._static_size[1])  # max pos in relation to zero pos
-        self._handle_default = wx.Point(0, 0)
-        self._handle_pos = wx.Point(self._handle_offset)
+        self._handle_offset = (0, 0)  # x,y offset for positioning handle relative to static image (top left)
+        self._handle_max_pos = self._set_max(max_pos)
+        self._handle_default = 0
+        self._handle_pos = self._handle_default
 
         self._scrollwheel_step = 1
         self._cursor_key_step = 1
@@ -66,26 +67,20 @@ class SimpleSlider(ActiveImageControl):
     # Class overrides #
     def DoGetBestSize(self):
         w, h = self._static_size
-        pad_x, pad_y = self._static_padding
-        size = wx.Size(w + pad_x * 2, h + pad_y * 2)
+        pad_y1, pad_x2, pad_y2, pad_x1 = self._static_padding
+        size = wx.Size(w + pad_x1 + pad_x2, h + pad_y1 + pad_y2)
         return size
 
     # Event handling #
     def on_paint(self, _):
         window_rect = self.GetRect()
-        # print(window_rect)
         buffer_bitmap = self.parent.bg_render.GetSubBitmap(window_rect)
         self.draw_to_context(wx.BufferedPaintDC(self, buffer_bitmap))
 
     def draw_to_context(self, dc):
         dc.DrawBitmap(self.stat_bmp, self._static_pos)
-        if self.inverted:
-            position = self._handle_max_pos[0] - self._handle_pos[0] + self._static_pos[0], \
-                         self._handle_max_pos[1] - self._handle_pos[1] + self._static_pos[1]
-        else:
-            position = self._handle_pos[0] + self._static_pos[0], \
-                         self._handle_pos[1] + self._static_pos[1]
-        dc.DrawBitmap(self.handle_bmp, position)
+
+        dc.DrawBitmap(self.handle_bmp, self.get_handle_point())
 
         if self.highlight and self.HasFocus():
             self.draw_highlight(dc, self.GetSize(), self.highlight_box)
@@ -93,20 +88,20 @@ class SimpleSlider(ActiveImageControl):
     def on_keypress(self, event):
         if self.HasFocus():
             keycode = event.GetKeyCode()
-            index = vertical = self.vertical
+            vertical = self.vertical
             inverted = self.inverted
 
             if keycode in [wx.WXK_RIGHT, wx.WXK_UP]:
                 if (inverted and not vertical) or (vertical and not inverted):
-                    self.move_handle(self._handle_pos[index] - self._cursor_key_step)
+                    self.set_position(self._handle_pos - self._cursor_key_step)
                 else:
-                    self.move_handle(self._handle_pos[index] + self._cursor_key_step)
+                    self.set_position(self._handle_pos + self._cursor_key_step)
 
             elif keycode in [wx.WXK_LEFT, wx.WXK_DOWN]:
                 if (inverted and not vertical) or (vertical and not inverted):
-                    self.move_handle(self._handle_pos[index] + self._cursor_key_step)
+                    self.set_position(self._handle_pos + self._cursor_key_step)
                 else:
-                    self.move_handle(self._handle_pos[index] - self._cursor_key_step)
+                    self.set_position(self._handle_pos - self._cursor_key_step)
 
             elif keycode == wx.WXK_SPACE:
                 self.reset_position()
@@ -119,13 +114,13 @@ class SimpleSlider(ActiveImageControl):
     def on_mouse_wheel(self, event):
         if not self.HasFocus():
             self.SetFocus()
-        index = vertical = self.vertical
+        vertical = self.vertical
         inverted = self.inverted
         delta = event.GetWheelDelta()  # normally +/-120, but better not to assume
         if (inverted and not vertical) or (vertical and not inverted):
-            self.move_handle(self._handle_pos[index] - (self._scrollwheel_step * event.GetWheelRotation() // delta))
+            self.set_position(self._handle_pos - (self._scrollwheel_step * event.GetWheelRotation() // delta))
         else:
-            self.move_handle(self._handle_pos[index] + (self._scrollwheel_step * event.GetWheelRotation() // delta))
+            self.set_position(self._handle_pos + (self._scrollwheel_step * event.GetWheelRotation() // delta))
 
     def on_left_down(self, event):
         self.mouse_move(event.GetPosition())
@@ -139,16 +134,10 @@ class SimpleSlider(ActiveImageControl):
         if not self.HasFocus():
             self.SetFocus()
         index = self.vertical
-        position = mouse_pos[index] - self._handle_centre[index] - self._static_padding[index]
+        position = mouse_pos[index] - self._handle_centre[index] - self._static_padding[3 - (3 * index)]  # TODO pad bit
         if self.inverted:
-            position = self._handle_max_pos[index] - position
-        self.move_handle(position)
-
-    def move_handle(self, pos):
-        if self.vertical:
-            self.set_position((self._handle_pos[0], pos))
-        else:
-            self.set_position((pos, self._handle_pos[1]))
+            position = self._handle_max_pos - position
+        self.set_position(position)
 
     def on_middle_up(self, _):
         if not self.HasFocus():
@@ -156,32 +145,48 @@ class SimpleSlider(ActiveImageControl):
         self.reset_position()
 
     # Getters and Setters #
-    def set_padding(self, padding=(0, 0)):
+    def set_padding(self, pad=(0, 0, 0, 0)):
         """ Apply additional padding around the static image, mouse events will extend into the padding """
-        self._static_padding = padding
-        self._static_pos = self.GetPosition() + self._static_padding
+        self._static_padding = make_padding(pad)
+        self._static_pos = self._get_stat_pos()
 
-    def set_default_pos(self, pos=(0, 0)):
-        """ Set the default position for the handle, resetting will place the handle at this point"""
-        if 0 <= pos[0] <= self._static_size[0]:  # checks that position is within image boundary
-            self.set_position(pos)
-            self._handle_default = self._handle_pos
-        else:
-            raise ValueError('The position value is not within the boundary of the slider widget')
+    def _get_stat_pos(self):
+        winx, winy = self.GetPosition()
+        pady, _, _, padx = self._static_padding
+        pos = (winx + padx, winy + pady)
+        return pos
 
-    def set_max(self, pos=(0, 0)):
-        """ Set the increment value (in degrees) for the scroll-wheel and cursor keys"""
-        if 0 <= pos[0] <= self._static_size[0]:  # checks that position is within image boundary
-            self._handle_max_pos = pos
+    def get_handle_point(self):
+        x_base = self._static_pos[0] + self._handle_offset[0]
+        y_base = self._static_pos[1] + self._handle_offset[1]
+        if self.inverted:
+            if self.vertical:
+                return x_base, self._handle_max_pos - self._handle_pos + y_base
+            else:
+                return self._handle_max_pos - self._handle_pos + x_base, y_base
         else:
-            raise ValueError('The position value is not within the boundary of the slider widget')
+            if self.vertical:
+                return x_base, self._handle_pos + y_base
+            else:
+                return self._handle_pos + x_base, y_base
 
-    def set_offset(self, pos=(0, 0)):
-        """ Set the pixel offset from top left position for the slider axis """
-        if (0 <= pos[0] <= self._static_size[0]) and (0 <= pos[1] <= self._static_size[1]):
-            self._handle_offset = pos
-        else:
-            raise ValueError('The position value is not within the boundary of the slider widget')
+    def set_default_pos(self, pos=0):
+        """ Set the default position for the handle, a reset will place the handle at this point"""
+        valid_pos = self._validate_limit(pos, self._handle_max_pos)
+        self._handle_default = valid_pos
+        self.set_position(valid_pos)
+
+    def _set_max(self, pos):
+        """ Set the maximum position value for the handle """
+        index = self.vertical
+        if pos:
+            if 0 <= pos <= self._static_size[index]:
+                return pos
+        return self._static_size[index]
+
+    def set_offset(self, point=(0, 0)):
+        if self._within_boundary(point, self._static_size):
+            self._handle_offset = point
 
     def set_step(self, scroll=1, key=1):
         """ Set the increment value for the scroll-wheel and cursor keys"""
@@ -196,9 +201,9 @@ class SimpleSlider(ActiveImageControl):
         """ Set cursor key step size (int > 0) """
         self._cursor_key_step = step
 
-    def set_position(self, pos=(0, 0)):
+    def set_position(self, pos=0):
         """ Validate and Set the (actual pixel) position for the handle """
-        valid_pos = self._validate_limits(pos, self._handle_max_pos)
+        valid_pos = self._validate_limit(pos, self._handle_max_pos)
         if valid_pos != self._handle_pos:
             self._handle_pos = valid_pos
             wx.PostEvent(self, ss_cmd_event(id=self.GetId(), value=self.value))
@@ -210,28 +215,24 @@ class SimpleSlider(ActiveImageControl):
     # Properties #
     @property
     def value(self):
-        value = self._handle_pos[self.vertical] / self._handle_max_pos[self.vertical]
+        value = self._handle_pos / self._handle_max_pos
         return value  # as percentage
 
     @value.setter
     def value(self, percent):
-        if self.vertical:
-            self.set_position((self._handle_max_pos[0], percent * self._handle_max_pos[1]))
-        else:
-            self.set_position((percent * self._handle_max_pos[0], self._handle_max_pos[1]))
+        self.set_position(percent * self._handle_max_pos)
 
     # Animation methods #
     def _animate(self, destination, animate=True):
         if animate:
-            index = self.vertical
-            curr_pos = self._handle_pos[index]  # for horizontal movement, [1] for vertical...
-            max_pos = self._handle_max_pos[index]
-            def_pos = destination[index]
+            curr_pos = self._handle_pos  # for horizontal movement, [1] for vertical...
+            max_pos = self._handle_max_pos
+            def_pos = destination
             diff = def_pos - curr_pos
             if diff:
                 step = 4 * int(diff / abs(diff))
                 for i in range(curr_pos, def_pos, step):
-                    self.move_handle(i)
+                    self.set_position(i)
                     # because we are using sleep in a loop, we are not returning control to the main loop
                     # so we need to call update() to refresh the screen immediately - ie to 'animate'
                     self.Update()
@@ -242,16 +243,22 @@ class SimpleSlider(ActiveImageControl):
         self.set_position(destination)
 
     # Helper methods #
-    def _validate_limits(self, position, max_pos):
-        index = self.vertical
-        if position[index] > max_pos[index]:
+    def _validate_limit(self, position, max_pos):
+        """  """
+        if position > max_pos:
+            # print("Position value received was greater than the max... Reset to max")
             return max_pos
-        elif position[index] < 0:
-            if self.vertical:
-                return max_pos[0], 0
-            else:
-                return 0, max_pos[1]
+        elif position < 0:
+            # print("Position value received was less than zero... Reset to zero")
+            return 0
         return position
+
+    def _within_boundary(self, point, boundary):
+        """ checks that a point is within image boundary """
+        if (0 <= point[0] <= boundary[0]) and (0 <= point[1] <= boundary[1]):
+            return True
+        else:
+            raise ValueError('The position value is not within the boundary of the slider widget')
 
 
 def rect_centre(size, origin=(0, 0)):
