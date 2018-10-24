@@ -17,7 +17,7 @@ class RotaryDial(ActiveImageControl):
         An Image Control for presenting a rotary dial style, (eg a knob or dial type control)
         It behaves similarly to a native control slider, except value is expressed as degrees (float)
 
-        :param bitmaps:  wx.BitMap objects - iterable
+        :param bitmaps:  wx.BitMap objects - iterable (bmp,bmp)
                         (first bitmap will be the static background)
                         (the second will be the dynamic pointer - an bitmap suitable for rotation - eg a knob pointer)
                         NB: The dynamic bitmap MUST BE A SQUARE (w=h);

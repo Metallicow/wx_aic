@@ -8,7 +8,7 @@ class LedArray(ActiveImageControl):
     An Active Image Control for presenting an array of two state (On / OFF) LED indicators,
     The bitmaps can be transparency masks or opaque
     If masks are used, set bg_colour for the colour you want for the LED
-    :param bitmaps: An iterable containing two equal sized wx.Bitmap objects
+    :param bitmaps: An iterable containing two equal sized wx.Bitmap objects (bmp,bmp)
                     The  bitmap in (0) position represents the OFF state
                     The  bitmap in (1) position represents the ON state
     :param colour_list: an iterable of wx.colour objects - one for each element in the array

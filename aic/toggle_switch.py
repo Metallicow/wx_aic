@@ -10,7 +10,7 @@ class ToggleSwitch(ActiveImageControl):
         """
         An Active Image Control for presenting a two position ON/OFF switch style
 
-        :param bitmaps: An iterable containing two equal sized wx.Bitmap objects
+        :param bitmaps: An iterable containing two equal sized wx.Bitmap objects (bmp,bmp)
                         The  bitmap in (0) position is treated as the default (OFF) base bitmap
         """
         # TODO option to rebind mouse to different functions eg wx.EVT_RIGHT_UP  to toggle state?

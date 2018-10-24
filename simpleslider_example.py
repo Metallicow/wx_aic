@@ -47,7 +47,7 @@ class ICPanel(ImageControlPanel):
         self.slide = SimpleSlider(self, slider_pair, max_pos=210)
         self.slide.set_padding((60,30))
         self.slide.set_offset((0,0))
-        self.slide.set_default_value(110)
+        self.slide.set_default_value()
         self.slide.set_step(2, 4)
         # self.slide.set_evt_on_animate()   # enable when threaded animation is used
         self.slide.set_highlighting()
@@ -58,13 +58,13 @@ class ICPanel(ImageControlPanel):
         slider_pair = (
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1.png')),
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1_handle.png')))
-        self.islide = SimpleSlider(self, slider_pair, is_inverted=True, max_pos=200)
-        self.islide.set_padding((30, 60))
+        self.islide = SimpleSlider(self, slider_pair, is_inverted=True, max_pos=210)
+        self.islide.set_padding((50, 10,50,50))
         # self.islide.set_offset((10, 9))
-        self.islide.set_default_value(100)
+        self.islide.set_default_value(1)
         self.islide.set_step(2, 4)
         self.islide.set_highlighting()
-        self.islide.highlight_box = ((0, 0), (20, 40))
+        self.islide.highlight_box = ((20, 0), (25, 40))
         mid_sizer.Add(self.islide, 0, 0, 10)
 
         mid_sizer.Add((0, 0), 1, wx.EXPAND, 5)
@@ -77,11 +77,11 @@ class ICPanel(ImageControlPanel):
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1v.png')),
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1_handle.png')))
         self.vslide = SimpleSlider(self, slider_pair, is_vertical=True, is_inverted=False, max_pos=210)
-        self.vslide.set_padding((50, 50))
-        self.vslide.set_default_value(30)
+        self.vslide.set_padding((30, 40))
+        self.vslide.set_default_value(.25)
         self.vslide.set_step(2, 4)
         self.vslide.set_highlighting()
-        self.vslide.highlight_box = ((0, 0), (0, 0))
+        self.vslide.highlight_box = ((0, 0), (10, 10))
         bot_sizer.Add(self.vslide, 0, 0, 10)
 
         # # Add a single inverted vertical slider control #
@@ -89,13 +89,13 @@ class ICPanel(ImageControlPanel):
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1v.png')),
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1_handle.png')))
         self.ivslide = SimpleSlider(self, slider_pair, is_vertical=True, is_inverted=True, max_pos=210)
-        self.ivslide.set_padding((30, 10))
-        self.ivslide.set_offset((0, 10))
+        self.ivslide.set_padding((30, 40))
+        # self.ivslide.set_offset((0, 10))
         self.ivslide.set_step(2, 4)
-        self.ivslide.set_default_value(.1)
+        self.ivslide.set_default_value(.5)
         # self.ivslide.set_default_pos(10)
         self.ivslide.set_highlighting()
-        self.ivslide.highlight_box = ((0, 0), (0, 0))
+        self.ivslide.highlight_box = ((0, 0), (20, 20))
         bot_sizer.Add(self.ivslide, 0, 0, 10)
 
         bot_sizer.Add((0, 0), 1, wx.EXPAND, 5)

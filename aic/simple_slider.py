@@ -16,7 +16,7 @@ class SimpleSlider(ActiveImageControl):
         An Image Control for presenting a simple slider style
         It behaves similarly to a native control slider, except value is expressed as a percentage
 
-        :param bitmaps:  wx.BitMap objects - iterable
+        :param bitmaps:  wx.BitMap objects - iterable (bmp,bmp)
                         (first bitmap will be the static background)
                         (the second will be the handle (pointer), preferably smaller than the static bitmap
                         If the handle is larger, you may need to compensate by adding padding to the slider
@@ -27,21 +27,21 @@ class SimpleSlider(ActiveImageControl):
                                 on a vertical slider- True if the bottom-most position has a zero value
         :param max_pos: Int - maximum limit of handle movement, pixel position relative to the zero position
 
-        EVT_SS_CHANGE: returns .value: float -> (0-1) the position of the handle as a percentage of the full range
+        EVT_SS_CHANGE: returns .value: float (0-1) -> the position of the handle as a percentage of the slider range
         """
 
         super().__init__(parent, *args, **kwargs)
         # Wants Chars used so that we can grab (cursor) key input
-        self.SetWindowStyleFlag(wx.WANTS_CHARS)
-        # self.SetWindowStyleFlag(wx.NO_BORDER | wx.WANTS_CHARS)
+        # self.SetWindowStyleFlag(wx.WANTS_CHARS)
+        self.SetWindowStyleFlag(wx.NO_BORDER | wx.WANTS_CHARS)
 
         self.parent = parent
         self.vertical = is_vertical
         self.inverted = is_inverted  # False for lt->rt & top->bot layouts; True for rt->lt & bot->top layouts
-        self.stat_bmp = bitmaps[0]
-        self._static_size = self.stat_bmp.Size
+        self.static_bmp = bitmaps[0]
+        self._static_size = self.static_bmp.Size
         self._static_padding = make_padding()
-        self._static_pos = self._get_stat_point()
+        self._static_pos = self._get_static_point()
 
         self.handle_bmp = bitmaps[1]
         self._handle_size = self.handle_bmp.Size
@@ -81,7 +81,7 @@ class SimpleSlider(ActiveImageControl):
         self.draw_to_context(wx.BufferedPaintDC(self, buffer_bitmap))
 
     def draw_to_context(self, dc):
-        dc.DrawBitmap(self.stat_bmp, self._static_pos)  # Draws foundation image
+        dc.DrawBitmap(self.static_bmp, self._static_pos)  # Draws foundation image
         dc.DrawBitmap(self.handle_bmp, self.get_handle_point())  # Draws handle image
 
         if self.highlight and self.HasFocus():
@@ -140,7 +140,6 @@ class SimpleSlider(ActiveImageControl):
         if self.inverted:
             position = self._handle_max_pos - position
         self._animate(position, animate)
-        # self.set_position(position)
 
     def on_middle_up(self, _):
         if not self.HasFocus():
@@ -153,9 +152,9 @@ class SimpleSlider(ActiveImageControl):
     def set_padding(self, pad=(0, 0, 0, 0)):
         """ Apply additional padding around the static image, mouse events will extend into the padding """
         self._static_padding = make_padding(pad)
-        self._static_pos = self._get_stat_point()
+        self._static_pos = self._get_static_point()
 
-    def _get_stat_point(self):
+    def _get_static_point(self):
         """ Returns the point at the top left of the foundation image """
         winx, winy = self.GetPosition()
         pady, _, _, padx = self._static_padding
@@ -177,13 +176,13 @@ class SimpleSlider(ActiveImageControl):
                 return self._handle_pos + x_base, y_base
 
     def set_default_pos(self, pos=0):
-        """ Set the default position for the handle, a reset will place the handle at this point"""
+        """ Set the default pixel position for the handle, a reset will place the handle at this point"""
         valid_pos = self._validate_limit(pos, self._handle_max_pos)
         self._handle_default = valid_pos
         self.set_position(self._handle_default)
 
     def set_default_value(self, val=0):
-        """ Set the default position for the handle - as a percentage value """
+        """ Set the default position for the handle - as a percentage value (float 0-1) """
         valid_value = self._validate_limit(val, 1)
         self._handle_default = int(valid_value * self._handle_max_pos)
         self.set_position(self._handle_default)
