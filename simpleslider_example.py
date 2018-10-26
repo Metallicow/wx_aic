@@ -5,7 +5,7 @@ import wx.lib.inspection
 from aic import ImageControlPanel, ImageControlFrame
 from aic import SimpleSlider
 from aic.simple_slider import EVT_SS_CHANGE
-from aic.utilities import Padding
+from aic.util import Padding
 
 RESOURCES = 'res'
 

@@ -4,7 +4,7 @@ import wx
 from wx.lib.newevent import NewCommandEvent
 import pytweening as ptw
 from aic import ActiveImageControl
-from aic.utilities import make_padding
+from aic.util import make_padding
 
 rs_cmd_event, EVT_RS_CHANGE = NewCommandEvent()
 
@@ -45,23 +45,19 @@ class RangeSlider(ActiveImageControl):
         self._static_padding = make_padding()
         self._static_pos = self._get_stat_point()
 
-        self.handle_lo_bmp = bitmaps[1]
-        self._handle_lo_size = self.handle_lo_bmp.Size
-        self._handle_lo_centre = rect_centre(self._handle_lo_size)
-        self._handle_lo_default = 0
-        self._handle_lo_pos = self._handle_lo_default
-
-        self.handle_hi_bmp = bitmaps[1] if len(bitmaps) == 2 else bitmaps[2]
-        self._handle_hi_size = self.handle_hi_bmp.Size
-        self._handle_hi_centre = rect_centre(self._handle_hi_size)
-        self._handle_hi_default = 0
-        self._handle_hi_pos = self._handle_hi_default
+        self.handle_bmp = bitmaps[1], bitmaps[1] if len(bitmaps) == 2 else bitmaps[2]
+        self._handle_size = self.handle_bmp[0].Size, self.handle_bmp[1].Size
+        self._handle_centre = rect_centre(self._handle_size[0]), rect_centre(self._handle_size[1])
+        self._handle_default = [0, 0]
+        self._handle_pos = [self._handle_default[0], self._handle_default[1]]
 
         self._handle_max_pos = self._set_max(max_pos)
         self._handle_offset = (0, 0)
+        self._active_handle = 0
 
         self._scroll_wheel_step = 1
         self._cursor_key_step = 1
+        self.animated = True
         self._evt_on_focus = False
         # self._evt_on_animate = True   # enable when threaded animation is used
 
@@ -91,8 +87,8 @@ class RangeSlider(ActiveImageControl):
 
     def draw_to_context(self, dc):
         dc.DrawBitmap(self.stat_bmp, self._static_pos)  # Draws foundation image
-        dc.DrawBitmap(self.handle_hi_bmp, self.get_handle_point(self._handle_hi_pos))  # Draws handle high image
-        dc.DrawBitmap(self.handle_lo_bmp, self.get_handle_point(self._handle_lo_pos))  # Draws handle low image
+        dc.DrawBitmap(self.handle_bmp[1], self.get_handle_point(self._handle_pos[1],True))  # Draws handle high image
+        dc.DrawBitmap(self.handle_bmp[0], self.get_handle_point(self._handle_pos[0]))  # Draws handle low image
 
         if self.highlight and self.HasFocus():
             self.draw_highlight(dc, self.GetSize(), self.highlight_box)
@@ -103,15 +99,15 @@ class RangeSlider(ActiveImageControl):
 
             if keycode in [wx.WXK_RIGHT, wx.WXK_UP]:
                 if (self.inverted and not self.vertical) or (self.vertical and not self.inverted):
-                    self.set_position_low(self._handle_lo_pos - self._cursor_key_step)
+                    self.set_position(self._handle_pos[self._active_handle] - self._cursor_key_step)
                 else:
-                    self.set_position_low(self._handle_lo_pos + self._cursor_key_step)
+                    self.set_position(self._handle_pos[self._active_handle] + self._cursor_key_step)
 
             elif keycode in [wx.WXK_LEFT, wx.WXK_DOWN]:
                 if (self.inverted and not self.vertical) or (self.vertical and not self.inverted):
-                    self.set_position_low(self._handle_lo_pos + self._cursor_key_step)
+                    self.set_position(self._handle_pos[self._active_handle] + self._cursor_key_step)
                 else:
-                    self.set_position_low(self._handle_lo_pos - self._cursor_key_step)
+                    self.set_position(self._handle_pos[self._active_handle] - self._cursor_key_step)
 
             elif keycode == wx.WXK_SPACE:
                 self.reset_position()
@@ -128,12 +124,14 @@ class RangeSlider(ActiveImageControl):
                 self._send_event()
         delta = event.GetWheelDelta()  # normally +/-120, but better not to assume
         if (self.inverted and not self.vertical) or (self.vertical and not self.inverted):
-            self.set_position_low(self._handle_lo_pos - (self._scroll_wheel_step * event.GetWheelRotation() // delta))
+            self.set_position(
+                self._handle_pos[self._active_handle] - (self._scroll_wheel_step * event.GetWheelRotation() // delta))
         else:
-            self.set_position_low(self._handle_lo_pos + (self._scroll_wheel_step * event.GetWheelRotation() // delta))
+            self.set_position(
+                self._handle_pos[self._active_handle] + (self._scroll_wheel_step * event.GetWheelRotation() // delta))
 
     def on_left_down(self, event):
-        self.mouse_move(event.GetPosition(), True)
+        self.mouse_move(event.GetPosition(), self.animated)
 
     def on_left_drag(self, event):
         if event.Dragging() and event.LeftIsDown():
@@ -146,11 +144,13 @@ class RangeSlider(ActiveImageControl):
             if self._evt_on_focus:
                 self._send_event()
         index = self.vertical
-        position = mouse_pos[index] - self._handle_lo_centre[index] - self._static_padding[3 - (3 * index)]
+        if self._active_handle:
+            position = mouse_pos[index] - (3 * self._handle_centre[1][index]) - self._static_padding[3 - (3 * index)]
+        else:
+            position = mouse_pos[index] - self._handle_centre[0][index] - self._static_padding[3 - (3 * index)]
         if self.inverted:
             position = self._handle_max_pos - position
         self._animate(position, animate)
-        # self.set_position_low(position)
 
     def on_middle_up(self, _):
         if not self.HasFocus():
@@ -158,12 +158,16 @@ class RangeSlider(ActiveImageControl):
             if self._evt_on_focus:
                 self._send_event()
         self.reset_position()
+        self._active_handle = not self._active_handle
 
     # Getters and Setters #
     def set_padding(self, pad=(0, 0, 0, 0)):
         """ Apply additional padding around the static image, mouse events will extend into the padding """
         self._static_padding = make_padding(pad)
         self._static_pos = self._get_stat_point()
+
+    def set_active_handle(self, handle):
+        self._active_handle = handle
 
     def _get_stat_point(self):
         """ Returns the point at the top left of the foundation image """
@@ -172,7 +176,7 @@ class RangeSlider(ActiveImageControl):
         point = (winx + padx, winy + pady)
         return point
 
-    def get_handle_point(self, handle_pos):
+    def get_handle_point(self, handle_pos, is_hi_handle = False):
         x_base = self._static_pos[0] + self._handle_offset[0]
         y_base = self._static_pos[1] + self._handle_offset[1]
         if self.inverted:
@@ -184,13 +188,15 @@ class RangeSlider(ActiveImageControl):
             if self.vertical:
                 return x_base, handle_pos + y_base
             else:
+                if is_hi_handle:
+                    return handle_pos + x_base + self._handle_size[0][0], y_base
                 return handle_pos + x_base, y_base
 
-    def set_default_pos(self, pos=0):
-        """ Set the default pixel position for the handle, a reset will place the handle at this point"""        
+    def set_default_pos(self, pos=0):  # TODO
+        """ Set the default pixel position for the handle, a reset will place the handle at this point"""
         valid_pos = self._validate_limit(pos, self._handle_max_pos)
-        self._handle_lo_default = valid_pos
-        self.set_position_low(self._handle_lo_default)
+        self._handle_default = valid_pos
+        self.set_position(self._handle_default)
 
     def set_default_values(self, values=(0, 1)):
         """ Set the default position for the handles - as percentage values; correcting if values are swapped """
@@ -199,29 +205,32 @@ class RangeSlider(ActiveImageControl):
             v_high, v_low = values
         self.set_default_value_low(v_low)
         self.set_default_value_high(v_high)
+        self._active_handle = 0
 
     def set_default_value_low(self, val=0):
         """ Set the default position for the handle - as a percentage value """
+        self._active_handle = 0
         valid_value = self._validate_limit(val, 1)
-        self._handle_lo_default = int(valid_value * self._handle_max_pos)
-        self.set_position_low(self._handle_lo_default)
+        self._handle_default[0] = int(valid_value * self._handle_max_pos)
+        self.set_position(self._handle_default[0])
 
     def set_default_value_high(self, val=1):
         """ Set the default position for the handle - as a percentage value """
+        self._active_handle = 1
         valid_value = self._validate_limit(val, 1)
-        self._handle_hi_default = int(valid_value * self._handle_max_pos)
-        self.set_position_low(self._handle_hi_default)
+        self._handle_default[1] = int(valid_value * self._handle_max_pos)
+        self.set_position(self._handle_default[1])
 
     def _set_max(self, pos):
         """ Set the maximum position value for the high handle """
         index = self.vertical
         if pos:
             if 0 <= pos <= self._static_size[index]:
-                return pos - self._handle_hi_size[index]    # position adjusted so that the high handle fits in
-        return self._static_size[index] - self._handle_hi_size[index]
+                return pos - self._handle_size[1][index]  # position adjusted to accommodate the 'high' handle
+        return self._static_size[index] - self._handle_size[1][index]
 
     def set_offset(self, point=(0, 0)):
-        """ Set the offset for the handle: x,y co-ordinates relative to the top left corner of the foundation image """
+        """ Set the offset for the handles: x,y co-ordinates relative to the top left corner of the foundation image """
         if self._within_boundary(point, self._static_size):
             self._handle_offset = point
 
@@ -238,11 +247,11 @@ class RangeSlider(ActiveImageControl):
         """ Set cursor key step size (int > 0) """
         self._cursor_key_step = step
 
-    def set_position_low(self, pos=0):
+    def set_position(self, pos=0):
         """ Validate and Set the (actual pixel) position for the handle """
         valid_pos = self._validate_limit(pos, self._handle_max_pos)
-        if valid_pos != self._handle_lo_pos:
-            self._handle_lo_pos = valid_pos
+        if valid_pos != self._handle_pos[self._active_handle]:
+            self._handle_pos[self._active_handle] = valid_pos
             self._send_event()
             self.Refresh(True)
 
@@ -252,19 +261,19 @@ class RangeSlider(ActiveImageControl):
     # def set_evt_on_animate(self, val = True): # enable when threaded animation is used
     #     self._evt_on_animate = val
 
-    def reset_position(self, animate=True):
-        self._animate(self._handle_lo_default, animate)
+    def reset_position(self):
+        self._animate(self._handle_default[self._active_handle], self.animated)
 
     # Properties #
     @property
     def value(self):
-        value_lo = self._handle_lo_pos / self._handle_max_pos   # TODO - one or both of these values must compensate for
-        value_hi = self._handle_hi_pos / self._handle_max_pos   # width of the handle/s, ?
+        value_lo = self._handle_pos[0] / self._handle_max_pos  # TODO - one or both of these values must compensate for
+        value_hi = self._handle_pos[1] / self._handle_max_pos  # width of the handle/s, ?
         return value_lo, value_hi  # as percentage of the max value
 
     @value.setter
     def value(self, percent):
-        self.set_position_low(percent * self._handle_max_pos)
+        self.set_position(percent * self._handle_max_pos)
 
     # TODO work on alternative animation method, threading? Can't use wx.timer as it's too slow
     # Also consider variables for speed factor(0.85) and smoothness(step=4)
@@ -272,14 +281,14 @@ class RangeSlider(ActiveImageControl):
     # Animation methods #
     def _animate(self, destination, animate=True):
         if animate:
-            curr_pos = self._handle_lo_pos
+            curr_pos = self._handle_pos[self._active_handle]
             max_pos = self._handle_max_pos
-            def_pos = destination
-            diff = def_pos - curr_pos
+            dest_pos = self._validate_limit(destination, max_pos)
+            diff = dest_pos - curr_pos
             if diff:
                 step = 4 * int(diff / abs(diff))
-                for i in range(curr_pos, def_pos, step):
-                    self.set_position_low(i)
+                for i in range(curr_pos, dest_pos, step):
+                    self.set_position(i)
                     # if self._evt_on_animate:  # This may be reserved for threaded animation
                     #     self._send_event()
                     #     print('sent')
@@ -289,10 +298,11 @@ class RangeSlider(ActiveImageControl):
                     if i != 0:
                         time.sleep(ptw.easeInQuart(abs((curr_pos - i + 1) / diff)) / int(max_pos * 0.85))
 
-        self.set_position_low(destination)
+        self.set_position(destination)
 
     # Helper methods #
-    def _validate_limit(self, position, max_pos):
+    @staticmethod
+    def _validate_limit(position, max_pos):
         """ Validate a position value, correcting the value if it exceeds lower or upper parameters """
         if position > max_pos:
             return max_pos
@@ -300,7 +310,8 @@ class RangeSlider(ActiveImageControl):
             return 0
         return position
 
-    def _within_boundary(self, point, boundary):
+    @staticmethod
+    def _within_boundary(point, boundary):
         """ checks that a point is within the boundary of the foundation image """
         if (0 <= point[0] <= boundary[0]) and (0 <= point[1] <= boundary[1]):
             return True

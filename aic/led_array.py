@@ -1,6 +1,6 @@
 import wx
 from aic import ActiveImageControl
-from .utilities import dc_to_bitmap
+from .util import dc_to_bitmap
 
 
 class LedArray(ActiveImageControl):

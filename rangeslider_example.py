@@ -15,9 +15,9 @@ class ICPanel(ImageControlPanel):
         self._populate()
 
         self.Bind(EVT_RS_CHANGE, self.on_slider_change, id=self.slide.GetId())
-        self.Bind(EVT_RS_CHANGE, self.on_islider_change, id=self.islide.GetId())
-        self.Bind(EVT_RS_CHANGE, self.on_vslider_change, id=self.vslide.GetId())
-        self.Bind(EVT_RS_CHANGE, self.on_ivslider_change, id=self.ivslide.GetId())
+        # self.Bind(EVT_RS_CHANGE, self.on_islider_change, id=self.islide.GetId())
+        # self.Bind(EVT_RS_CHANGE, self.on_vslider_change, id=self.vslide.GetId())
+        # self.Bind(EVT_RS_CHANGE, self.on_ivslider_change, id=self.ivslide.GetId())
 
     def _populate(self):
         panel_sizer = wx.BoxSizer(wx.VERTICAL)
@@ -54,55 +54,57 @@ class ICPanel(ImageControlPanel):
         self.slide = RangeSlider(self, slider_pair, max_pos=220)
         self.slide.set_padding((30, 60))
         self.slide.set_offset((0, 3))
+        # self.slide.animated = False
         self.slide.set_default_values((0, 1))
         self.slide.set_step(2, 4)
         self.slide.set_highlighting()
         self.slide.highlight_box = ((0, 0), (20, 20))
         mid_sizer.Add(self.slide, 0, 0, 10)
 
-        # Add a single inverted horizontal slider control #
-        slider_pair = (
-            wx.Bitmap(os.path.join(RESOURCES, 'sticky_range1.png')),
-            wx.Bitmap(os.path.join(RESOURCES, 'sticky_range_handle.png')))
-        self.islide = RangeSlider(self, slider_pair, is_inverted=True, max_pos=220)
-        self.islide.set_padding((30, 60))
-        self.islide.set_offset((0, 3))
-        self.islide.set_default_values((0, .5))
-        self.islide.set_step(2, 4)
-        self.islide.set_highlighting()
-        self.islide.highlight_box = ((0, 0), (20, 20))
-        mid_sizer.Add(self.islide, 0, 0, 10)
+        # # Add a single inverted horizontal slider control #
+        # slider_pair = (
+        #     wx.Bitmap(os.path.join(RESOURCES, 'sticky_range1.png')),
+        #     wx.Bitmap(os.path.join(RESOURCES, 'sticky_range_handle.png')))
+        # self.islide = RangeSlider(self, slider_pair, is_inverted=True, max_pos=220)
+        # self.islide.set_padding((30, 60))
+        # self.islide.set_offset((0, 3))
+        # self.islide.set_default_values((0, .5))
+        # self.islide.set_step(2, 4)
+        # self.islide.set_highlighting()
+        # self.islide.highlight_box = ((0, 0), (20, 20))
+        # mid_sizer.Add(self.islide, 0, 0, 10)
 
-        mid_sizer.Add((0, 0), 1, wx.EXPAND, 5)
+        # mid_sizer.Add((0, 0), 1, wx.EXPAND, 5)
 
         bot_sizer = wx.BoxSizer(wx.HORIZONTAL)
         bot_sizer.Add((0, 0), 1, wx.EXPAND, 5)
+        #
+        # # Add a single vertical slider control #
+        # slider_pair = (
+        #     wx.Bitmap(os.path.join(RESOURCES, 'sticky_range1v.png')),
+        #     wx.Bitmap(os.path.join(RESOURCES, 'sticky_range_handlev.png')))
+        # self.vslide = RangeSlider(self, slider_pair, is_vertical=True, is_inverted=False, max_pos=220)
+        # self.vslide.set_padding((30, 30))
+        # self.vslide.set_offset((3, 0))
+        # self.vslide.set_default_values((.11, 1))
+        # self.vslide.set_step(2, 4)
+        # self.vslide.set_active_handle(1)
+        # self.vslide.set_highlighting()
+        # self.vslide.highlight_box = ((0, 0), (10, 10))
+        # bot_sizer.Add(self.vslide, 0, 0, 10)
 
-        # Add a single vertical slider control #
-        slider_pair = (
-            wx.Bitmap(os.path.join(RESOURCES, 'sticky_range1v.png')),
-            wx.Bitmap(os.path.join(RESOURCES, 'sticky_range_handlev.png')))
-        self.vslide = RangeSlider(self, slider_pair, is_vertical=True, is_inverted=False, max_pos=220)
-        self.vslide.set_padding((30, 30))
-        self.vslide.set_offset((3, 0))
-        self.vslide.set_default_values((.11, 1))
-        self.vslide.set_step(2, 4)
-        self.vslide.set_highlighting()
-        self.vslide.highlight_box = ((0, 0), (10, 10))
-        bot_sizer.Add(self.vslide, 0, 0, 10)
-
-        # Add a single inverted vertical slider control #
-        slider_pair = (
-            wx.Bitmap(os.path.join(RESOURCES, 'sticky_range1v.png')),
-            wx.Bitmap(os.path.join(RESOURCES, 'sticky_range_handlev.png')))
-        self.ivslide = RangeSlider(self, slider_pair, is_vertical=True, is_inverted=True, max_pos=220)
-        self.ivslide.set_padding((30, 30))
-        self.ivslide.set_offset((3, 0))
-        self.ivslide.set_step(2, 4)
-        self.ivslide.set_default_values((.5,0))
-        self.ivslide.set_highlighting()
-        self.ivslide.highlight_box = ((0, 0), (20, 20))
-        bot_sizer.Add(self.ivslide, 0, 0, 10)
+        # # Add a single inverted vertical slider control #
+        # slider_pair = (
+        #     wx.Bitmap(os.path.join(RESOURCES, 'sticky_range1v.png')),
+        #     wx.Bitmap(os.path.join(RESOURCES, 'sticky_range_handlev.png')))
+        # self.ivslide = RangeSlider(self, slider_pair, is_vertical=True, is_inverted=True, max_pos=220)
+        # self.ivslide.set_padding((30, 30))
+        # self.ivslide.set_offset((3, 0))
+        # self.ivslide.set_step(2, 4)
+        # self.ivslide.set_default_values((.5, 0))
+        # self.ivslide.set_highlighting()
+        # self.ivslide.highlight_box = ((0, 0), (20, 20))
+        # bot_sizer.Add(self.ivslide, 0, 0, 10)
 
         bot_sizer.Add((0, 0), 1, wx.EXPAND, 5)
 

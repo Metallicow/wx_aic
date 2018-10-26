@@ -13,5 +13,5 @@ from .rotary_switch import RotarySwitch
 from .simple_slider import SimpleSlider
 from .simple_slide_switch import SimpleSlideSwitch
 from .range_slider import RangeSlider
-from .utilities import dc_to_bitmap, save_bmp_to_file
-from .utilities import make_padding, Padding
+from .util import dc_to_bitmap, save_bmp_to_file
+from .util import make_padding, Padding

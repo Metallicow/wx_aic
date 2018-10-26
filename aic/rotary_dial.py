@@ -221,11 +221,11 @@ class RotaryDial(ActiveImageControl):
         if animate:
             curr_pos = int(self._pointer_angle)
             max_pos = self.pointer_max_angle
-            def_pos = self.pointer_default
-            diff = def_pos - curr_pos
+            dest_pos = self.pointer_default
+            diff = dest_pos - curr_pos
             if diff:
                 step = 4 * int(diff / abs(diff))
-                for i in range(curr_pos, def_pos, step):
+                for i in range(curr_pos, dest_pos, step):
                     self.set_angle(i)
                     self.Update()  # in this case, the buffer won't empty until update() is called
                     if i != 0:

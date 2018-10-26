@@ -49,4 +49,5 @@ class ActiveImageControl(wx.Control):
             dc.DrawRoundedRectangle(rect, cnr_rad)
 
     def set_highlighting(self, highlight=True):
+        """ Enable active control highlighting """
         self.highlight = highlight

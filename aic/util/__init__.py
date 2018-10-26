@@ -1,4 +1,4 @@
-# utilities\__init__.py
+# util\__init__.py
 
 from .bitmap import dc_to_bitmap, save_bmp_to_file
 from .padding import make_padding, Padding

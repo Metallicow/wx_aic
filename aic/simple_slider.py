@@ -4,7 +4,7 @@ import wx
 from wx.lib.newevent import NewCommandEvent
 import pytweening as ptw
 from aic import ActiveImageControl
-from aic.utilities import make_padding
+from aic.util import make_padding
 
 ss_cmd_event, EVT_SS_CHANGE = NewCommandEvent()
 
@@ -249,11 +249,11 @@ class SimpleSlider(ActiveImageControl):
         if animate:
             curr_pos = self._handle_pos
             max_pos = self._handle_max_pos
-            def_pos = destination
-            diff = def_pos - curr_pos
+            dest_pos = destination
+            diff = dest_pos - curr_pos
             if diff:
                 step = 4 * int(diff / abs(diff))
-                for i in range(curr_pos, def_pos, step):
+                for i in range(curr_pos, dest_pos, step):
                     self.set_position(i)
                     # if self._evt_on_animate:  # This may be reserved for threaded animation
                     #     self._send_event()

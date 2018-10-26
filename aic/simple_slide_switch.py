@@ -5,7 +5,7 @@ from wx.lib.newevent import NewCommandEvent
 import pytweening as ptw
 
 from aic import ActiveImageControl
-from aic.utilities import make_padding
+from aic.util import make_padding
 
 sss_cmd_event, EVT_SSS_CHANGE = NewCommandEvent()
 

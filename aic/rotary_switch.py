@@ -187,7 +187,7 @@ class RotarySwitch(ActiveImageControl):
         angle_ = self._parse_angle(angle)
         if angle != self._pointer_angle:
             self._pointer_angle = self._parse_limits(angle_, self.pointer_max_angle)
-            wx.PostEvent(self, rd_cmd_event(id=self.GetId(), state=self._pointer_angle))
+            wx.PostEvent(self, rs_cmd_event(id=self.GetId(), state=self._pointer_angle))
             self._refresh()
 
     def reset(self, animate=True):
