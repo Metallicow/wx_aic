@@ -52,7 +52,7 @@ class ICPanel(ImageControlPanel):
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_range_handle_lo.png')),
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_range_handle_hi.png')))
         self.slide = RangeSlider(self, slider_pair, max_pos=220)
-        self.slide.set_padding((30, 60))
+        # self.slide.set_padding((30, 60))
         self.slide.set_offset((0, 3))
         # self.slide.animated = False
         self.slide.set_default_values((0, 1))
