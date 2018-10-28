@@ -45,7 +45,7 @@ class RangeSlider(ActiveImageControl):
         self._static_padding = make_padding()
         self._static_pos = self._get_stat_point()
 
-        self.handle_bmp = bitmaps[1], bitmaps[1] if len(bitmaps) == 2 else bitmaps[2]
+        self.handle_bmp = self._set_handle_bitmaps(bitmaps)
         self._handle_size = self.handle_bmp[0].Size, self.handle_bmp[1].Size
         self._handle_centre = rect_centre(self._handle_size[0]), rect_centre(self._handle_size[1])
         self._handle_default = [0, 0]
@@ -54,7 +54,7 @@ class RangeSlider(ActiveImageControl):
         self._handle_max_pos = self._set_max(max_pos)
         self._handle_offset = (0, 0)
         self._active_handle = 0  # 0 for lo handle; 1 for hi handle
-        self._no_swap = False
+        self._can_swap = True
 
         self._scroll_wheel_step = 1
         self._cursor_key_step = 1
@@ -145,7 +145,7 @@ class RangeSlider(ActiveImageControl):
         event.Skip()
 
     def on_left_up(self, _):
-        self._no_swap = False
+        self._can_swap = True
 
     def mouse_move(self, mouse_pos, animate=False):
         if not self.HasFocus():
@@ -155,9 +155,9 @@ class RangeSlider(ActiveImageControl):
         index = self.vertical
 
         rel_mouse_pos = mouse_pos[index] - self._handle_offset[index] - \
-            self._static_padding[3 - (3 * index)] - self._handle_size[0][index]
+                        self._static_padding[3 - (3 * index)] - self._handle_size[0][index]
 
-        if not self._no_swap:
+        if self._can_swap:
             if rel_mouse_pos < self._handle_pos[0]:
                 self._active_handle = 0
             elif rel_mouse_pos >= self._handle_pos[1]:
@@ -165,7 +165,7 @@ class RangeSlider(ActiveImageControl):
             else:
                 self._active_handle = min(range(2), key=lambda i: abs(self._handle_pos[i] - rel_mouse_pos))
                 print(self._active_handle)
-            self._no_swap = True
+            self._can_swap = False
 
         if self._active_handle:
             rel_mouse_pos = mouse_pos[index] - (3 * self._handle_centre[1][index]) - \
@@ -176,8 +176,8 @@ class RangeSlider(ActiveImageControl):
             rel_mouse_pos = self._handle_max_pos - rel_mouse_pos
         self._animate(rel_mouse_pos, animate)
 
-    def on_leave(self,_):
-        self._no_swap = False
+    def on_leave(self, _):
+        self._can_swap = True
 
     def on_middle_up(self, _):
         if not self.HasFocus():
@@ -212,6 +212,8 @@ class RangeSlider(ActiveImageControl):
                 return self._handle_max_pos - handle_pos + x_base, y_base
         else:
             if self.vertical:
+                if is_hi_handle:
+                    return x_base, handle_pos + self._handle_size[0][1] + y_base
                 return x_base, handle_pos + y_base
             else:
                 if is_hi_handle:
@@ -254,6 +256,13 @@ class RangeSlider(ActiveImageControl):
             if 0 <= pos <= self._static_size[index]:
                 return pos - self._handle_size[1][index]  # position adjusted to accommodate the 'high' handle
         return self._static_size[index] - self._handle_size[1][index]
+
+    def _set_handle_bitmaps(self, bitmaps):
+        if self.inverted:
+            handles = bitmaps[1] if len(bitmaps) == 2 else bitmaps[2], bitmaps[1]
+        else:
+            handles = bitmaps[1], bitmaps[1] if len(bitmaps) == 2 else bitmaps[2]
+        return handles
 
     def set_offset(self, point=(0, 0)):
         """ Set the offset for the handles: x,y co-ordinates relative to the top left corner of the foundation image """
