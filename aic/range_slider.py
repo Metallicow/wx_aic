@@ -132,18 +132,26 @@ class RangeSlider(ActiveImageControl):
         rect = wx.Rect(rect_point, rect_size)
         dc.DrawRectangle(rect.Deflate(self.bar_shrink))
 
-        colour = wx.Colour(250, 25, 25, 55)
-        rect_point = lo_x + offset[0], lo_y + offset[1] + 1
-        rect_size = hi_x - lo_x + self._handle_size[0][0], self._handle_size[0][1] - 1
+        colour = wx.Colour(250, 25, 25, 60)
+        if self.vertical:
+            rect_point = lo_x + offset[0]+1, lo_y + offset[1]
+            rect_size = self._handle_size[0][0]-1, hi_y - lo_y + self._handle_size[0][1]
+        else:
+            rect_point = lo_x + offset[0], lo_y + offset[1] + 1
+            rect_size = hi_x - lo_x + self._handle_size[0][0], self._handle_size[0][1]-1
         pen_col = brush_col = colour
         dc.SetPen(wx.Pen(pen_col, width=1))
         dc.SetBrush(wx.Brush(brush_col))
         rect = wx.Rect(rect_point, rect_size)
         dc.DrawRectangle(rect.Deflate(self.bar_shrink))
 
-        colour = wx.Colour(55, 25, 25, 25)
-        rect_point = lo_x + offset[0], lo_y + offset[1] + 4
-        rect_size = hi_x - lo_x + self._handle_size[0][0], self._handle_size[0][1] - 4
+        colour = wx.Colour(55, 25, 25, 35)
+        if self.vertical:
+            rect_point = lo_x + offset[0]+4, lo_y + offset[1]
+            rect_size = self._handle_size[0][0]-4, hi_y - lo_y + self._handle_size[0][1]
+        else:
+            rect_point = lo_x + offset[0], lo_y + offset[1] + 4
+            rect_size = hi_x - lo_x + self._handle_size[0][0], self._handle_size[0][1]-4
         pen_col = brush_col = colour
         dc.SetPen(wx.Pen(pen_col, width=1))
         dc.SetBrush(wx.Brush(brush_col))
