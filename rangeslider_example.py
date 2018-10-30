@@ -17,7 +17,7 @@ class ICPanel(ImageControlPanel):
         self.Bind(EVT_RS_CHANGE, self.on_slider_change, id=self.slide.GetId())
         self.Bind(EVT_RS_CHANGE, self.on_islider_change, id=self.islide.GetId())
         self.Bind(EVT_RS_CHANGE, self.on_vslider_change, id=self.vslide.GetId())
-        # self.Bind(EVT_RS_CHANGE, self.on_ivslider_change, id=self.ivslide.GetId())
+        self.Bind(EVT_RS_CHANGE, self.on_ivslider_change, id=self.ivslide.GetId())
 
     def _populate(self):
         panel_sizer = wx.BoxSizer(wx.VERTICAL)
@@ -94,18 +94,18 @@ class ICPanel(ImageControlPanel):
         self.vslide.highlight_box = ((0, 0), (10, 10))
         bot_sizer.Add(self.vslide, 0, 0, 10)
 
-        # # Add a single inverted vertical slider control #
-        # slider_pair = (
-        #     wx.Bitmap(os.path.join(RESOURCES, 'sticky_range1v.png')),
-        #     wx.Bitmap(os.path.join(RESOURCES, 'sticky_range_handlev.png')))
-        # self.ivslide = RangeSlider(self, slider_pair, is_vertical=True, is_inverted=True, max_pos=220)
-        # self.ivslide.set_padding((30, 30))
-        # self.ivslide.set_offset((3, 0))
-        # self.ivslide.set_step(2, 4)
-        # self.ivslide.set_default_values((.5, 0))
-        # self.ivslide.set_highlighting()
-        # self.ivslide.highlight_box = ((0, 0), (20, 20))
-        # bot_sizer.Add(self.ivslide, 0, 0, 10)
+        # Add a single inverted vertical slider control #
+        slider_pair = (
+            wx.Bitmap(os.path.join(RESOURCES, 'sticky_range1v.png')),
+            wx.Bitmap(os.path.join(RESOURCES, 'sticky_range_handlev.png')))
+        self.ivslide = RangeSlider(self, slider_pair, is_vertical=True, is_inverted=True, max_pos=220)
+        self.ivslide.set_padding((30, 30))
+        self.ivslide.set_offset((3, 0))
+        self.ivslide.set_step(2, 4)
+        self.ivslide.set_default_values((.5, 0))
+        self.ivslide.set_highlighting()
+        self.ivslide.highlight_box = ((0, 0), (20, 20))
+        bot_sizer.Add(self.ivslide, 0, 0, 10)
 
         bot_sizer.Add((0, 0), 1, wx.EXPAND, 5)
 

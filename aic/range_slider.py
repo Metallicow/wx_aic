@@ -153,18 +153,28 @@ class RangeSlider(ActiveImageControl):
             if self._evt_on_focus:
                 self._send_event()
         index = self.vertical
-
+        hand_max = self._handle_max_pos
+        hand_pos = self._handle_pos
         rel_mouse_pos = mouse_pos[index] - self._handle_offset[index] - \
                         self._static_padding[3 - (3 * index)] - self._handle_size[0][index]
 
         if self._can_swap:
-            if rel_mouse_pos < self._handle_pos[0]:
-                self._active_handle = 0
-            elif rel_mouse_pos >= self._handle_pos[1]:
-                self._active_handle = 1
+            if self.inverted:
+                if hand_max - rel_mouse_pos <= hand_pos[0]:
+                    self._active_handle = 0
+                elif hand_max - rel_mouse_pos >= hand_pos[1]:
+                    self._active_handle = 1
+                else:
+                    self._active_handle = min(range(2), key=lambda i: abs(hand_max - hand_pos[i] - rel_mouse_pos))
+                    print(self._active_handle)
             else:
-                self._active_handle = min(range(2), key=lambda i: abs(self._handle_pos[i] - rel_mouse_pos))
-                print(self._active_handle)
+                if rel_mouse_pos <= hand_pos[0]:
+                    self._active_handle = 0
+                elif rel_mouse_pos >= hand_pos[1]:
+                    self._active_handle = 1
+                else:
+                    self._active_handle = min(range(2), key=lambda i: abs(hand_pos[i] - rel_mouse_pos))
+                    print(self._active_handle)
             self._can_swap = False
 
         if self._active_handle:
@@ -173,7 +183,10 @@ class RangeSlider(ActiveImageControl):
         else:
             rel_mouse_pos = mouse_pos[index] - self._handle_centre[0][index] - self._static_padding[3 - (3 * index)]
         if self.inverted:
-            rel_mouse_pos = self._handle_max_pos - rel_mouse_pos
+            if self._active_handle:
+                rel_mouse_pos = hand_max - rel_mouse_pos - (self._handle_size[1][index])
+            else:
+                rel_mouse_pos = hand_max - rel_mouse_pos + (self._handle_size[1][index])
         self._animate(rel_mouse_pos, animate)
 
     def on_leave(self, _):
@@ -203,13 +216,21 @@ class RangeSlider(ActiveImageControl):
         return point
 
     def get_handle_point(self, handle_pos, is_hi_handle=False):
+        """ Returns the top-left point for drawing a handle (either hi or lo) """
         x_base = self._static_pos[0] + self._handle_offset[0]
         y_base = self._static_pos[1] + self._handle_offset[1]
         if self.inverted:
             if self.vertical:
-                return x_base, self._handle_max_pos - handle_pos + y_base
+                if is_hi_handle:
+                    return x_base, self._handle_max_pos - handle_pos + y_base
+                else:
+                    return x_base, self._handle_max_pos - handle_pos + self._handle_size[0][1] + y_base
             else:
-                return self._handle_max_pos - handle_pos + x_base, y_base
+                if is_hi_handle:
+                    return self._handle_max_pos - handle_pos + x_base, y_base
+                else:
+                    return self._handle_max_pos - handle_pos + x_base + self._handle_size[0][0], y_base
+
         else:
             if self.vertical:
                 if is_hi_handle:
