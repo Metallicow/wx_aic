@@ -53,12 +53,17 @@ class RangeSlider(ActiveImageControl):
 
         self._handle_max_pos = self._set_max(max_pos)
         self._handle_offset = (0, 0)
-        self._active_handle = 0  # 0 for lo handle; 1 for hi handle
-        self._can_swap = True
 
         self._scroll_wheel_step = 1
         self._cursor_key_step = 1
+
+        self.range_bar = True
+        self.bar_colour = wx.Colour(250, 250, 25, 205)
+        self.bar_shrink = 7
+
         self.animated = True
+        self._active_handle = 0  # 0 for lo handle; 1 for hi handle
+        self._can_swap = True
         self._evt_on_focus = False
         # self._evt_on_animate = True   # enable when threaded animation is used
 
@@ -90,11 +95,60 @@ class RangeSlider(ActiveImageControl):
 
     def draw_to_context(self, dc):
         dc.DrawBitmap(self.stat_bmp, self._static_pos)  # Draws foundation image
-        dc.DrawBitmap(self.handle_bmp[1], self.get_handle_point(self._handle_pos[1], True))  # Draws handle high image
-        dc.DrawBitmap(self.handle_bmp[0], self.get_handle_point(self._handle_pos[0]))  # Draws handle low image
+        hi_point = self.get_handle_point(self._handle_pos[1], True)
+        lo_point = self.get_handle_point(self._handle_pos[0])
+        if self.range_bar:
+            self.draw_bar(dc, lo_point, hi_point)
+        dc.DrawBitmap(self.handle_bmp[1], hi_point)  # Draws handle high image
+        dc.DrawBitmap(self.handle_bmp[0], lo_point)  # Draws handle low image
 
         if self.highlight and self.HasFocus():
             self.draw_highlight(dc, self.GetSize(), self.highlight_box)
+
+    def draw_bar(self, context, lo_point, hi_point):
+        try:
+            dc = wx.GCDC(context)
+        except NotImplementedError:
+            dc = context
+        if self.vertical:
+            offset = (-1, 0)
+        else:
+            offset = (0, -1)
+        if self.inverted:
+            lo_x, lo_y = hi_point
+            hi_x, hi_y = lo_point
+        else:
+            lo_x, lo_y = lo_point
+            hi_x, hi_y = hi_point
+
+        rect_point = lo_x + offset[0], lo_y + offset[1]
+        if self.vertical:
+            rect_size = self._handle_size[0][0], hi_y - lo_y + self._handle_size[0][1]
+        else:
+            rect_size = hi_x - lo_x + self._handle_size[0][0], self._handle_size[0][1]
+        pen_col = brush_col = self.bar_colour
+        dc.SetPen(wx.Pen(pen_col, width=1))
+        dc.SetBrush(wx.Brush(brush_col))
+        rect = wx.Rect(rect_point, rect_size)
+        dc.DrawRectangle(rect.Deflate(self.bar_shrink))
+
+        colour = wx.Colour(250, 25, 25, 55)
+        rect_point = lo_x + offset[0], lo_y + offset[1] + 1
+        rect_size = hi_x - lo_x + self._handle_size[0][0], self._handle_size[0][1] - 1
+        pen_col = brush_col = colour
+        dc.SetPen(wx.Pen(pen_col, width=1))
+        dc.SetBrush(wx.Brush(brush_col))
+        rect = wx.Rect(rect_point, rect_size)
+        dc.DrawRectangle(rect.Deflate(self.bar_shrink))
+
+        colour = wx.Colour(55, 25, 25, 25)
+        rect_point = lo_x + offset[0], lo_y + offset[1] + 4
+        rect_size = hi_x - lo_x + self._handle_size[0][0], self._handle_size[0][1] - 4
+        pen_col = brush_col = colour
+        dc.SetPen(wx.Pen(pen_col, width=1))
+        dc.SetBrush(wx.Brush(brush_col))
+        rect = wx.Rect(rect_point, rect_size)
+        dc.DrawRectangle(rect.Deflate(self.bar_shrink))
 
     def on_keypress(self, event):
         if self.HasFocus():
@@ -219,17 +273,18 @@ class RangeSlider(ActiveImageControl):
         """ Returns the top-left point for drawing a handle (either hi or lo) """
         x_base = self._static_pos[0] + self._handle_offset[0]
         y_base = self._static_pos[1] + self._handle_offset[1]
+        inv_base = self._handle_max_pos - handle_pos
         if self.inverted:
             if self.vertical:
                 if is_hi_handle:
-                    return x_base, self._handle_max_pos - handle_pos + y_base
+                    return x_base, inv_base + y_base
                 else:
-                    return x_base, self._handle_max_pos - handle_pos + self._handle_size[0][1] + y_base
+                    return x_base, inv_base + self._handle_size[0][1] + y_base
             else:
                 if is_hi_handle:
-                    return self._handle_max_pos - handle_pos + x_base, y_base
+                    return inv_base + x_base, y_base
                 else:
-                    return self._handle_max_pos - handle_pos + x_base + self._handle_size[0][0], y_base
+                    return inv_base + x_base + self._handle_size[0][0], y_base
 
         else:
             if self.vertical:
