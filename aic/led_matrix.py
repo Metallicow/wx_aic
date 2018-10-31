@@ -62,14 +62,13 @@ class LedMatrix(ActiveImageControl):
 
     # Event Handling #
     def on_paint(self, _):
-        start = time.perf_counter()
+        # start = time.perf_counter()
         window_rect = self.GetRect()
         buffer_bitmap = self.parent.bg_render.GetSubBitmap(window_rect)  # the bit of panel bitmap we draw on
-
         context = wx.BufferedPaintDC(self, buffer_bitmap)
 
         self.paint_matrix(context)
-        print(time.perf_counter() - start)
+        # print(time.perf_counter() - start)
         # on screen painting only occurs the instance that this method exits
 
     # instance methods #

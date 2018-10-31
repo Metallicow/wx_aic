@@ -57,7 +57,7 @@ class RangeSlider(ActiveImageControl):
         self._scroll_wheel_step = 1
         self._cursor_key_step = 1
 
-        self.range_bar = True
+        self.range_bar = 2  # 0 = disabled; 1 enabled - passive; 2 enabled - active
         self.bar_colour = wx.Colour(250, 250, 25, 205)
         self.bar_shrink = 7
 
@@ -65,7 +65,8 @@ class RangeSlider(ActiveImageControl):
         self._active_handle = 0  # 0 for lo handle; 1 for hi handle
         self._can_swap = True
         self._evt_on_focus = False
-        # self._evt_on_animate = True   # enable when threaded animation is used
+        # self._evt_on_animate = True   # enable when threaded animation is used;
+        # Used to generate an event for each step of the animation (currently sends event at completion of animation)
 
         self.highlight_box = ((0, 0), (0, 0))
 
@@ -249,7 +250,7 @@ class RangeSlider(ActiveImageControl):
                 rel_mouse_pos = hand_max - rel_mouse_pos - (self._handle_size[1][index])
             else:
                 rel_mouse_pos = hand_max - rel_mouse_pos + (self._handle_size[1][index])
-        self._animate(rel_mouse_pos, animate)
+        self._move_handle(rel_mouse_pos, animate)
 
     def on_leave(self, _):
         self._can_swap = True
@@ -386,7 +387,7 @@ class RangeSlider(ActiveImageControl):
     #     self._evt_on_animate = val
 
     def reset_position(self):
-        self._animate(self._handle_default[self._active_handle], self.animated)
+        self._move_handle(self._handle_default[self._active_handle], self.animated)
 
     # Properties #
     @property
@@ -403,7 +404,7 @@ class RangeSlider(ActiveImageControl):
     # Also consider variables for speed factor(0.85) and smoothness(step=4)
 
     # Animation methods #
-    def _animate(self, destination, animate=True):
+    def _move_handle(self, destination, animate=True):
         if animate:
             curr_pos = self._handle_pos[self._active_handle]
             max_pos = self._handle_max_pos

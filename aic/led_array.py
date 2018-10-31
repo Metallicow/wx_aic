@@ -65,24 +65,18 @@ class LedArray(ActiveImageControl):
 
     # Event Handling #
     def on_paint(self, _):
-        # TODO totally revise this code - return to method used in other led objects (ie don't bother using memorydc)
         window_rect = self.GetRect()
         buffer_bitmap = self.parent.bg_render.GetSubBitmap(window_rect)
-        context = wx.MemoryDC(buffer_bitmap)
-        # context = wx.BufferedPaintDC(self, buffer_bitmap)
+        context = wx.BufferedPaintDC(self, buffer_bitmap)
 
-        bmm = self.paint_array(context)
-        dc = wx.BufferedPaintDC(self, buffer_bitmap)
-        dc.DrawBitmap(bmm, 0, 0)
+        self.paint_array(context)
 
     # Instance methods #
     def paint_array(self, context):
-        # try:
-        #     dc = wx.GCDC(context)
-        # except NotImplementedError:
-        #     dc = context
-
-        dc = context
+        try:
+            dc = wx.GCDC(context)
+        except NotImplementedError:
+            dc = context
 
         w, h = self.stat_size
         px, py = self.stat_padding
