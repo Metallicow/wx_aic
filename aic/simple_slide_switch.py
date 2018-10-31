@@ -28,9 +28,9 @@ class SimpleSlideSwitch(ActiveImageControl):
                                 on a horizontal slider- True if the right-most position has a zero value
                                 on a vertical slider- True if the bottom-most position has a zero value
         :param switch_ticks:    an integer (>=2) which will spread the ticks evenly across the range
-                                (the values for the default 2 position switch are: 0 & max)
                                     or
                                 an iterable of floats (0.0 - 1.0) as a % of axis max position (eg 0.5 is half way)
+                                (the default is a 2 position switch with values of 0 & max)
 
         EVT_SSS_CHANGE: returns .value: int -> the (zero based) index of the selected switch position
         """
