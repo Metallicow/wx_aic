@@ -54,6 +54,7 @@ class ICPanel(ImageControlPanel):
         self.slide = RangeSlider(self, slider_pair, max_pos=220)
         self.slide.set_padding((30, 60))
         self.slide.set_offset((0, 3))
+        self.slide.range_bar = 2
         # self.slide.animated = False
         self.slide.set_default_values((0, 1))
         self.slide.set_step(2, 4)
@@ -69,6 +70,7 @@ class ICPanel(ImageControlPanel):
         self.islide = RangeSlider(self, slider_pair, is_inverted=True, max_pos=220)
         self.islide.set_padding((30, 60))
         self.islide.set_offset((0, 3))
+        self.islide.range_bar = 2
         self.islide.set_default_values((0, .5))
         self.islide.set_step(2, 4)
         self.islide.set_highlighting()
@@ -87,6 +89,7 @@ class ICPanel(ImageControlPanel):
         self.vslide = RangeSlider(self, slider_pair, is_vertical=True, is_inverted=False, max_pos=220)
         self.vslide.set_padding((30, 30))
         self.vslide.set_offset((3, 0))
+        self.vslide.range_bar = 2
         self.vslide.set_default_values((.1, 1))
         self.vslide.set_step(2, 4)
         self.vslide.set_active_handle(1)
@@ -101,6 +104,7 @@ class ICPanel(ImageControlPanel):
         self.ivslide = RangeSlider(self, slider_pair, is_vertical=True, is_inverted=True, max_pos=220)
         self.ivslide.set_padding((30, 30))
         self.ivslide.set_offset((3, 0))
+        self.ivslide.range_bar = 2
         self.ivslide.set_step(2, 4)
         self.ivslide.set_default_values((.5, 0))
         self.ivslide.set_highlighting()

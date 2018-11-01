@@ -57,13 +57,14 @@ class RangeSlider(ActiveImageControl):
         self._scroll_wheel_step = 1
         self._cursor_key_step = 1
 
-        self.range_bar = 2  # 0 = disabled; 1 enabled - passive; 2 enabled - active
+        self.range_bar = 1  # 0 = disabled; 1 enabled - passive; 2 enabled - active
         self.bar_colour = wx.Colour(250, 250, 25, 205)
         self.bar_shrink = 7
 
         self.animated = True
         self._active_handle = 0  # 0 for lo handle; 1 for hi handle
-        self._can_swap = True
+        self._not_dragging = True
+        self._last_mouse_pos = None
         self._evt_on_focus = False
         # self._evt_on_animate = True   # enable when threaded animation is used;
         # Used to generate an event for each step of the animation (currently sends event at completion of animation)
@@ -75,10 +76,12 @@ class RangeSlider(ActiveImageControl):
 
         self.Bind(wx.EVT_KEY_DOWN, self.on_keypress)
         self.Bind(wx.EVT_LEFT_DOWN, self.on_left_down)
-        self.Bind(wx.EVT_LEFT_UP, self.on_left_up)
+        self.Bind(wx.EVT_LEFT_UP, self.on_mouse_button_up)
+        self.Bind(wx.EVT_MIDDLE_DOWN, self.on_middle_down)
         self.Bind(wx.EVT_MIDDLE_UP, self.on_middle_up)
+        self.Bind(wx.EVT_RIGHT_UP, self.on_mouse_button_up)
         self.Bind(wx.EVT_MOUSEWHEEL, self.on_mouse_wheel)
-        self.Bind(wx.EVT_MOUSE_EVENTS, self.on_left_drag)
+        self.Bind(wx.EVT_MOUSE_EVENTS, self.on_mouse_drag)
         self.Bind(wx.EVT_LEAVE_WINDOW, self.on_leave)
 
     # Class overrides #
@@ -135,11 +138,11 @@ class RangeSlider(ActiveImageControl):
 
         colour = wx.Colour(250, 25, 25, 60)
         if self.vertical:
-            rect_point = lo_x + offset[0]+1, lo_y + offset[1]
-            rect_size = self._handle_size[0][0]-1, hi_y - lo_y + self._handle_size[0][1]
+            rect_point = lo_x + offset[0] + 1, lo_y + offset[1]
+            rect_size = self._handle_size[0][0] - 1, hi_y - lo_y + self._handle_size[0][1]
         else:
             rect_point = lo_x + offset[0], lo_y + offset[1] + 1
-            rect_size = hi_x - lo_x + self._handle_size[0][0], self._handle_size[0][1]-1
+            rect_size = hi_x - lo_x + self._handle_size[0][0], self._handle_size[0][1] - 1
         pen_col = brush_col = colour
         dc.SetPen(wx.Pen(pen_col, width=1))
         dc.SetBrush(wx.Brush(brush_col))
@@ -148,11 +151,11 @@ class RangeSlider(ActiveImageControl):
 
         colour = wx.Colour(55, 25, 25, 35)
         if self.vertical:
-            rect_point = lo_x + offset[0]+4, lo_y + offset[1]
-            rect_size = self._handle_size[0][0]-4, hi_y - lo_y + self._handle_size[0][1]
+            rect_point = lo_x + offset[0] + 4, lo_y + offset[1]
+            rect_size = self._handle_size[0][0] - 4, hi_y - lo_y + self._handle_size[0][1]
         else:
             rect_point = lo_x + offset[0], lo_y + offset[1] + 4
-            rect_size = hi_x - lo_x + self._handle_size[0][0], self._handle_size[0][1]-4
+            rect_size = hi_x - lo_x + self._handle_size[0][0], self._handle_size[0][1] - 4
         pen_col = brush_col = colour
         dc.SetPen(wx.Pen(pen_col, width=1))
         dc.SetBrush(wx.Brush(brush_col))
@@ -191,6 +194,13 @@ class RangeSlider(ActiveImageControl):
             self.SetFocus()
             if self._evt_on_focus:
                 self._send_event()
+
+        mouse_pos = event.GetPosition()
+        index = self.vertical
+        rel_mouse_pos = mouse_pos[index] - self._handle_offset[index] - \
+                        self._static_padding[3 - (3 * index)] - self._handle_size[0][index]
+        self._active_handle = self._closest_handle(rel_mouse_pos)
+
         delta = event.GetWheelDelta()  # normally +/-120, but better not to assume
         if (self.inverted and not self.vertical) or (self.vertical and not self.inverted):
             self.set_position(
@@ -202,13 +212,65 @@ class RangeSlider(ActiveImageControl):
     def on_left_down(self, event):
         self.mouse_move(event.GetPosition(), self.animated)
 
-    def on_left_drag(self, event):
+    def on_mouse_drag(self, event):
         if event.Dragging() and event.LeftIsDown():
             self.mouse_move(event.GetPosition())
+        if event.Dragging() and event.RightIsDown():
+            if self.range_bar == 2:
+                self.bar_move(event.GetPosition())
         event.Skip()
 
-    def on_left_up(self, _):
-        self._can_swap = True
+    def on_mouse_button_up(self, _):
+        self._not_dragging = True
+        self._last_mouse_pos = None
+
+    def bar_move(self, mouse_pos):
+        if not self.HasFocus():
+            self.SetFocus()
+            if self._evt_on_focus:
+                self._send_event()
+
+        diff = abs(self._handle_pos[1] - self._handle_pos[0])
+        if diff != self._handle_max_pos:  # if range bar is at maximum width, do nothing (since it can't move)
+            index = self.vertical
+            if self.inverted:
+                rel_mouse_pos = self._rel_mouse_position(mouse_pos, index) + diff//2
+            else:
+                rel_mouse_pos = self._rel_mouse_position(mouse_pos, index) - diff//2
+
+            if self._last_mouse_pos is None:  # if we have only started to move the mouse, just save it's position
+                self._last_mouse_pos = rel_mouse_pos
+            else:
+                move = rel_mouse_pos - self._last_mouse_pos
+
+                # if movement is -ve, test the lo handle, if +ve, test the hi handle
+                if move == abs(move):
+                    if self.inverted:
+                        new_pos = self._validate_limit(self._handle_pos[1] + move, self._handle_max_pos) - diff #TODO
+                    else:
+                        new_pos = self._validate_limit(self._handle_pos[1] + move, self._handle_max_pos) - diff
+                else:
+                    if self.inverted:
+                        new_pos = self._validate_limit(self._handle_pos[0] + move, self._handle_max_pos) #TODO
+                    else:
+                        new_pos = self._validate_limit(self._handle_pos[0] + move, self._handle_max_pos)
+
+                if new_pos != self._handle_pos[self.inverted]:
+                    print(self._handle_pos[0], new_pos)
+                    if self.inverted:
+                        new_pos = self._handle_max_pos - new_pos
+                        self._active_handle = 0
+                        self.set_position(new_pos-diff)
+                        self._active_handle = 1
+                        self.set_position(new_pos)
+                    else:
+                        self._active_handle = 0
+                        self.set_position(new_pos)
+                        self._active_handle = 1
+                        self.set_position(new_pos+diff)
+                    self._last_mouse_pos = new_pos
+
+            self._not_dragging = False  # TODO may not be needed
 
     def mouse_move(self, mouse_pos, animate=False):
         if not self.HasFocus():
@@ -217,34 +279,20 @@ class RangeSlider(ActiveImageControl):
                 self._send_event()
         index = self.vertical
         hand_max = self._handle_max_pos
-        hand_pos = self._handle_pos
-        rel_mouse_pos = mouse_pos[index] - self._handle_offset[index] - \
-                        self._static_padding[3 - (3 * index)] - self._handle_size[0][index]
+        rel_mouse_pos = self._rel_mouse_position(mouse_pos, index)
 
-        if self._can_swap:
-            if self.inverted:
-                if hand_max - rel_mouse_pos <= hand_pos[0]:
-                    self._active_handle = 0
-                elif hand_max - rel_mouse_pos >= hand_pos[1]:
-                    self._active_handle = 1
-                else:
-                    self._active_handle = min(range(2), key=lambda i: abs(hand_max - hand_pos[i] - rel_mouse_pos))
-                    print(self._active_handle)
-            else:
-                if rel_mouse_pos <= hand_pos[0]:
-                    self._active_handle = 0
-                elif rel_mouse_pos >= hand_pos[1]:
-                    self._active_handle = 1
-                else:
-                    self._active_handle = min(range(2), key=lambda i: abs(hand_pos[i] - rel_mouse_pos))
-                    print(self._active_handle)
-            self._can_swap = False
+        if self._not_dragging:
+            self._active_handle = self._closest_handle(rel_mouse_pos)
+            self._not_dragging = False
 
         if self._active_handle:
-            rel_mouse_pos = mouse_pos[index] - (3 * self._handle_centre[1][index]) - \
-                            self._static_padding[3 - (3 * index)]
+            rel_mouse_pos = mouse_pos[index] \
+                            - (3 * self._handle_centre[1][index]) \
+                            - self._static_padding[3 - (3 * index)]
         else:
-            rel_mouse_pos = mouse_pos[index] - self._handle_centre[0][index] - self._static_padding[3 - (3 * index)]
+            rel_mouse_pos = mouse_pos[index] \
+                            - self._handle_centre[0][index] \
+                            - self._static_padding[3 - (3 * index)]
         if self.inverted:
             if self._active_handle:
                 rel_mouse_pos = hand_max - rel_mouse_pos - (self._handle_size[1][index])
@@ -252,14 +300,43 @@ class RangeSlider(ActiveImageControl):
                 rel_mouse_pos = hand_max - rel_mouse_pos + (self._handle_size[1][index])
         self._move_handle(rel_mouse_pos, animate)
 
-    def on_leave(self, _):
-        self._can_swap = True
+    def _rel_mouse_position(self, mouse_pos, index):
+        """ Return an integer representing the mouse position relative to the slider axis """
+        return mouse_pos[index] \
+               - self._handle_offset[index] \
+               - self._static_padding[3 - (3 * index)] \
+               - self._handle_size[0][index]
 
-    def on_middle_up(self, _):
+    def _closest_handle(self, mouse_pos):
+        hand_pos = self._handle_pos
+        if self.inverted:
+            mouse_pos = self._handle_max_pos - mouse_pos
+        if mouse_pos <= hand_pos[0]:
+            return 0
+        elif mouse_pos >= hand_pos[1]:
+            return 1
+        else:
+            if self.inverted:
+                return min(range(2), key=lambda i: abs(mouse_pos - hand_pos[i]))
+            else:
+                return min(range(2), key=lambda i: abs(hand_pos[i] - mouse_pos))
+
+    def on_leave(self, _):
+        self._not_dragging = True
+        self._last_mouse_pos = None
+
+    def on_middle_down(self, event):
         if not self.HasFocus():
             self.SetFocus()
             if self._evt_on_focus:
                 self._send_event()
+        mouse_pos = event.GetPosition()
+        index = self.vertical
+        rel_mouse_pos = mouse_pos[index] - self._handle_offset[index] - \
+                        self._static_padding[3 - (3 * index)] - self._handle_size[0][index]
+        self._active_handle = self._closest_handle(rel_mouse_pos)
+
+    def on_middle_up(self, _):
         self.reset_position()
 
     # Getters and Setters #
