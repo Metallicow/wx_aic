@@ -38,7 +38,7 @@ class SimpleSlider(ActiveImageControl):
 
         self.parent = parent
         self.vertical = is_vertical
-        self.inverted = is_inverted  # False for lt->rt & top->bot layouts; True for rt->lt & bot->top layouts
+        # self.inverted = is_inverted  # False for lt->rt & top->bot layouts; True for rt->lt & bot->top layouts
         self.static_bmp = bitmaps[0]
         self._static_size = self.static_bmp.Size
         self._static_padding = make_padding()
@@ -94,13 +94,13 @@ class SimpleSlider(ActiveImageControl):
             keycode = event.GetKeyCode()
 
             if keycode in [wx.WXK_RIGHT, wx.WXK_UP]:
-                if (self.inverted and not self.vertical) or (self.vertical and not self.inverted):
+                if self.vertical:
                     self.set_position(self._handle_pos - self._cursor_key_step)
                 else:
                     self.set_position(self._handle_pos + self._cursor_key_step)
 
             elif keycode in [wx.WXK_LEFT, wx.WXK_DOWN]:
-                if (self.inverted and not self.vertical) or (self.vertical and not self.inverted):
+                if self.vertical:
                     self.set_position(self._handle_pos + self._cursor_key_step)
                 else:
                     self.set_position(self._handle_pos - self._cursor_key_step)
@@ -119,7 +119,8 @@ class SimpleSlider(ActiveImageControl):
             if self._evt_on_focus:
                 self._send_event()
         delta = event.GetWheelDelta()  # normally +/-120, but better not to assume
-        if (self.inverted and not self.vertical) or (self.vertical and not self.inverted):
+
+        if self.vertical:
             self.set_position(self._handle_pos - (self._scroll_wheel_step * event.GetWheelRotation() // delta))
         else:
             self.set_position(self._handle_pos + (self._scroll_wheel_step * event.GetWheelRotation() // delta))
@@ -139,8 +140,7 @@ class SimpleSlider(ActiveImageControl):
                 self._send_event()
         index = self.vertical
         position = mouse_pos[index] - self._handle_centre[index] - self._static_padding[3 - (3 * index)]
-        if self.inverted:
-            position = self._handle_max_pos - position
+
         self._animate(position, animate)
 
     def on_middle_up(self, _):
@@ -161,16 +161,11 @@ class SimpleSlider(ActiveImageControl):
     def _get_handle_point(self):
         x_base = self._static_pos[0] + self._handle_offset[0]
         y_base = self._static_pos[1] + self._handle_offset[1]
-        if self.inverted:
-            if self.vertical:
-                return x_base, self._handle_max_pos - self._handle_pos + y_base
-            else:
-                return self._handle_max_pos - self._handle_pos + x_base, y_base
+
+        if self.vertical:
+            return x_base, self._handle_pos + y_base
         else:
-            if self.vertical:
-                return x_base, self._handle_pos + y_base
-            else:
-                return self._handle_pos + x_base, y_base
+            return self._handle_pos + x_base, y_base
 
     def _set_max(self, pos):
         """ Set the maximum position value for the handle (ie the axis length in pixels) """

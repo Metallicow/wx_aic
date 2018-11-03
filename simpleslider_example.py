@@ -57,12 +57,12 @@ class ICPanel(ImageControlPanel):
         slider_pair = (
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1.png')),
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1_handle.png')))
-        self.islide = SimpleSlider(self, slider_pair, is_inverted=True, max_pos=210)
+        self.islide = SimpleSlider(self, slider_pair, max_pos=210)
         self.islide.set_padding((50, 10, 50, 10))
         self.islide.set_default_value(210)
         self.islide.set_step(2, 4)
         self.islide.set_highlighting()
-        self.islide.highlight_box = ((20, 0), (25, 40))
+        self.islide.highlight_box = ((0, 0), (0, 40))
         mid_sizer.Add(self.islide, 0, 0, 10)
 
         mid_sizer.Add((0, 0), 1, wx.EXPAND, 5)
@@ -74,7 +74,7 @@ class ICPanel(ImageControlPanel):
         slider_pair = (
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1v.png')),
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1_handle.png')))
-        self.vslide = SimpleSlider(self, slider_pair, is_vertical=True, is_inverted=False, max_pos=210)
+        self.vslide = SimpleSlider(self, slider_pair, is_vertical=True, max_pos=210)
         self.vslide.set_padding((30, 40))
         self.vslide.set_default_value(70)
         self.vslide.set_step(2, 4)
@@ -86,7 +86,7 @@ class ICPanel(ImageControlPanel):
         slider_pair = (
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1v.png')),
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1_handle.png')))
-        self.ivslide = SimpleSlider(self, slider_pair, is_vertical=True, is_inverted=True, max_pos=210)
+        self.ivslide = SimpleSlider(self, slider_pair, is_vertical=True, max_pos=210)
         self.ivslide.set_padding((30, 40))
         self.ivslide.set_step(2, 4)
         self.ivslide.set_default_value(105)
@@ -108,7 +108,7 @@ class ICPanel(ImageControlPanel):
         event.Skip()
 
     def on_islider_change(self, event):
-        self.Text4.SetLabel(str(int(event.value)))
+        self.Text4.SetLabel(str(int(210-event.value)))
         event.Skip()
 
     def on_vslider_change(self, event):
