@@ -27,6 +27,8 @@ class SimpleSlideSwitch(ActiveImageControl):
                             Put simply:
                                 on a horizontal slider- True if the right-most position has a zero value
                                 on a vertical slider- True if the bottom-most position has a zero value
+        :param max_pos: Int - maximum limit of handle movement, pixel position relative to the zero position
+                                in other words, the usable axis length (in pixels)
         :param switch_ticks:    an integer (>=2) which will spread the ticks evenly across the range
                                     or
                                 an iterable of floats (0.0 - 1.0) as a % of axis max position (eg 0.5 is half way)

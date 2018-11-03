@@ -13,20 +13,21 @@ class RangeSlider(ActiveImageControl):
 
     def __init__(self, parent, bitmaps, is_vertical=False, is_inverted=False, max_pos=None, *args, **kwargs):
         """
-        An Image Control for presenting a simple slider style
-        It behaves similarly to a native control slider, except value is expressed as a percentage
+        An Image Control for presenting a range slider style
+        It behaves as a double point native control slider; handle values are expressed as percentages
 
         :param bitmaps:  wx.BitMap objects - iterable (bmp,bmp,[bmp])
                         (first bitmap will be the static background)
                         (the second will be the handle/s (pointers), preferably smaller than the static bitmap)
                         (if a third bitmap is passed, it will apply to the 'high' handle only)
-                        If the handle is larger, you may need to compensate by adding padding to the slider
+                        If the handle is large, you may need to compensate by adding padding to the slider
         :param is_vertical: Boolean - does the slider operate in a vertical orientation
         :param is_inverted: Boolean - does the slider operate contra to the co-ordinate system
                             Put simply:
                                 on a horizontal slider- True if the right-most position has a zero value
                                 on a vertical slider- True if the bottom-most position has a zero value
         :param max_pos: Int - maximum limit of handle movement, pixel position relative to the zero position
+                                in other words, the usable axis length (in pixels)
 
         EVT_RS_CHANGE: returns .value: (float(0-1), float(0-1)) ->  the position of the (low, high) handles as a
                                                                     percentage of the slider range
@@ -243,34 +244,40 @@ class RangeSlider(ActiveImageControl):
             else:
                 move = rel_mouse_pos - self._last_mouse_pos
 
-                # if movement is -ve, test the lo handle, if +ve, test the hi handle
-                if move == abs(move):
-                    if self.inverted:
-                        new_pos = self._validate_limit(self._handle_pos[1] + move, self._handle_max_pos) - diff #TODO
-                    else:
-                        new_pos = self._validate_limit(self._handle_pos[1] + move, self._handle_max_pos) - diff
-                else:
-                    if self.inverted:
-                        new_pos = self._validate_limit(self._handle_pos[0] + move, self._handle_max_pos) #TODO
-                    else:
-                        new_pos = self._validate_limit(self._handle_pos[0] + move, self._handle_max_pos)
+                if move:
+                    # if movement is -ve, test the lo handle, if +ve, test the hi handle
+                    if move == abs(move):
+                        if self.inverted:
+                            print(self._handle_pos[1],move, diff, self._handle_max_pos)
+                            new_pos = self._validate_limit(self._handle_pos[1] + move, self._handle_max_pos) - diff #TODO
+                            print(new_pos)
+                        else:
+                            print(self._handle_pos[1],move, diff, self._handle_max_pos)
+                            new_pos = self._validate_limit(self._handle_pos[1] + move, self._handle_max_pos) - diff
+                            print(new_pos)
 
-                if new_pos != self._handle_pos[self.inverted]:
-                    print(self._handle_pos[0], new_pos)
-                    if self.inverted:
-                        new_pos = self._handle_max_pos - new_pos
-                        self._active_handle = 0
-                        self.set_position(new_pos-diff)
-                        self._active_handle = 1
-                        self.set_position(new_pos)
                     else:
-                        self._active_handle = 0
-                        self.set_position(new_pos)
-                        self._active_handle = 1
-                        self.set_position(new_pos+diff)
-                    self._last_mouse_pos = new_pos
+                        if self.inverted:
+                            new_pos = self._validate_limit(self._handle_pos[0] + move, self._handle_max_pos) #TODO
+                        else:
+                            new_pos = self._validate_limit(self._handle_pos[0] + move, self._handle_max_pos)
 
-            self._not_dragging = False  # TODO may not be needed
+                    if new_pos != self._handle_pos[self.inverted]:
+                        # print(self._handle_pos[0], new_pos)
+                        if self.inverted:
+                            new_pos = self._handle_max_pos - new_pos
+                            self._active_handle = 0
+                            self.set_position(new_pos-diff)
+                            self._active_handle = 1
+                            self.set_position(new_pos)
+                        else:
+                            self._active_handle = 0
+                            self.set_position(new_pos)
+                            self._active_handle = 1
+                            self.set_position(new_pos+diff)
+                        self._last_mouse_pos =  new_pos
+
+            # self._notdragging = False  # TODO may not be needed
 
     def mouse_move(self, mouse_pos, animate=False):
         if not self.HasFocus():

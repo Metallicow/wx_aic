@@ -14,7 +14,7 @@ class SimpleSlider(ActiveImageControl):
     def __init__(self, parent, bitmaps, is_vertical=False, is_inverted=False, max_pos=None, *args, **kwargs):
         """
         An Image Control for presenting a simple slider style
-        It behaves similarly to a native control slider, except value is expressed as a percentage
+        It behaves similarly to a native control slider
 
         :param bitmaps:  wx.BitMap objects - iterable (bmp,bmp)
                         (first bitmap will be the static background)
@@ -26,6 +26,7 @@ class SimpleSlider(ActiveImageControl):
                                 on a horizontal slider- True if the right-most position has a zero value
                                 on a vertical slider- True if the bottom-most position has a zero value
         :param max_pos: Int - maximum limit of handle movement, pixel position relative to the zero position
+                                in other words, the usable axis length (in pixels)
 
         EVT_SS_CHANGE: returns .value: float (0-1) -> the position of the handle as a percentage of the slider range
         """
@@ -69,6 +70,7 @@ class SimpleSlider(ActiveImageControl):
 
     # Class overrides #
     def DoGetBestSize(self):
+        """ Override parent/s  """
         w, h = self._static_size
         pad_y1, pad_x2, pad_y2, pad_x1 = self._static_padding
         size = wx.Size(w + pad_x1 + pad_x2, h + pad_y1 + pad_y2)
@@ -82,7 +84,7 @@ class SimpleSlider(ActiveImageControl):
 
     def draw_to_context(self, dc):
         dc.DrawBitmap(self.static_bmp, self._static_pos)  # Draws foundation image
-        dc.DrawBitmap(self.handle_bmp, self.get_handle_point())  # Draws handle image
+        dc.DrawBitmap(self.handle_bmp, self._get_handle_point())  # Draws handle image
 
         if self.highlight and self.HasFocus():
             self.draw_highlight(dc, self.GetSize(), self.highlight_box)
@@ -149,11 +151,6 @@ class SimpleSlider(ActiveImageControl):
         self.reset_position()
 
     # Getters and Setters #
-    def set_padding(self, pad=(0, 0, 0, 0)):
-        """ Apply additional padding around the static image, mouse events will extend into the padding """
-        self._static_padding = make_padding(pad)
-        self._static_pos = self._get_static_point()
-
     def _get_static_point(self):
         """ Returns the point at the top left of the foundation image """
         winx, winy = self.GetPosition()
@@ -161,7 +158,7 @@ class SimpleSlider(ActiveImageControl):
         point = (winx + padx, winy + pady)
         return point
 
-    def get_handle_point(self):
+    def _get_handle_point(self):
         x_base = self._static_pos[0] + self._handle_offset[0]
         y_base = self._static_pos[1] + self._handle_offset[1]
         if self.inverted:
@@ -175,6 +172,19 @@ class SimpleSlider(ActiveImageControl):
             else:
                 return self._handle_pos + x_base, y_base
 
+    def _set_max(self, pos):
+        """ Set the maximum position value for the handle (ie the axis length in pixels) """
+        index = self.vertical
+        if pos:
+            if 0 <= pos <= self._static_size[index]:
+                return pos
+        return self._static_size[index]
+
+    def set_padding(self, pad=(0, 0, 0, 0)):
+        """ Apply additional padding around the static image, mouse events will extend into the padding """
+        self._static_padding = make_padding(pad)
+        self._static_pos = self._get_static_point()
+
     def set_default_pos(self, pos=0):
         """ Set the default pixel position for the handle, a reset will place the handle at this point"""
         valid_pos = self._validate_limit(pos, self._handle_max_pos)
@@ -182,18 +192,8 @@ class SimpleSlider(ActiveImageControl):
         self.set_position(self._handle_default)
 
     def set_default_value(self, val=0):
-        """ Set the default position for the handle - as a percentage value (float 0-1) """
-        valid_value = self._validate_limit(val, 1)
-        self._handle_default = int(valid_value * self._handle_max_pos)
-        self.set_position(self._handle_default)
-
-    def _set_max(self, pos):
-        """ Set the maximum position value for the handle """
-        index = self.vertical
-        if pos:
-            if 0 <= pos <= self._static_size[index]:
-                return pos
-        return self._static_size[index]
+        """ Convenience function for set_default_position """
+        self.set_default_pos(val)
 
     def set_offset(self, point=(0, 0)):
         """ Set the offset for the handle: x,y co-ordinates relative to the top left corner of the foundation image """
@@ -201,7 +201,7 @@ class SimpleSlider(ActiveImageControl):
             self._handle_offset = point
 
     def set_step(self, scroll=1, key=1):
-        """ Set the increment value for the scroll-wheel and cursor keys (int > 0) """
+        """ Set the pixel increment value for the scroll-wheel and cursor keys (int > 0) """
         self.set_scroll_step(scroll)
         self.set_key_step(key)
 
@@ -219,29 +219,18 @@ class SimpleSlider(ActiveImageControl):
         if valid_pos != self._handle_pos:
             self._handle_pos = valid_pos
             self._send_event()
-            # wx.PostEvent(self, ss_cmd_event(id=self.GetId(), value=self.value))
             self.Refresh(True)
 
     def set_evt_on_focus(self, val=True):
         self._evt_on_focus = val
 
-    # def set_evt_on_animate(self, val = True): # enable when threaded animation is used
+    # def set_evt_on_animate(self, val = True): # enable if/when threaded animation is implemented
     #     self._evt_on_animate = val
 
     def reset_position(self, animate=True):
         self._animate(self._handle_default, animate)
 
-    # Properties #
-    @property
-    def value(self):
-        value = self._handle_pos / self._handle_max_pos
-        return value  # as percentage of the max value
-
-    @value.setter
-    def value(self, percent):
-        self.set_position(percent * self._handle_max_pos)
-
-    # TODO work on alternative animation method, threading? Can't use wx.timer as it's too slow
+    # TODO consider on alternative animation method, threading? Can't use wx.timer as it's too slow
     # Also consider variables for speed factor(0.85) and smoothness(step=4)
 
     # Animation methods #
@@ -255,9 +244,11 @@ class SimpleSlider(ActiveImageControl):
                 step = 4 * int(diff / abs(diff))
                 for i in range(curr_pos, dest_pos, step):
                     self.set_position(i)
+
                     # if self._evt_on_animate:  # This may be reserved for threaded animation
                     #     self._send_event()
                     #     print('sent')
+
                     # because we are using sleep in a loop, we are not returning control to the main loop
                     # so we need to call update() to refresh the screen immediately - ie to 'animate'
                     self.Update()
@@ -267,7 +258,8 @@ class SimpleSlider(ActiveImageControl):
         self.set_position(destination)
 
     # Helper methods #
-    def _validate_limit(self, position, max_pos):
+    @staticmethod
+    def _validate_limit(position, max_pos):
         """ Validate a position value, correcting the value if it exceeds lower or upper parameters """
         if position > max_pos:
             return max_pos
@@ -275,7 +267,8 @@ class SimpleSlider(ActiveImageControl):
             return 0
         return position
 
-    def _within_boundary(self, point, boundary):
+    @staticmethod
+    def _within_boundary(point, boundary):
         """ checks that a point is within the boundary of the foundation image """
         if (0 <= point[0] <= boundary[0]) and (0 <= point[1] <= boundary[1]):
             return True
@@ -284,6 +277,16 @@ class SimpleSlider(ActiveImageControl):
 
     def _send_event(self):
         wx.PostEvent(self, ss_cmd_event(id=self.GetId(), value=self.value))
+
+    # Properties #
+    @property
+    def value(self):
+        value = self._handle_pos
+        return value
+
+    @value.setter
+    def value(self, pos):
+        self.set_position(pos)
 
 
 def rect_centre(size, origin=(0, 0)):

@@ -51,3 +51,18 @@ class ActiveImageControl(wx.Control):
     def set_highlighting(self, highlight=True):
         """ Enable active control highlighting """
         self.highlight = highlight
+
+
+def rect_centre(size, origin=(0, 0)):
+    """
+    Returns the centre point of a rectangle
+
+    :param size: wx.Size (width, height)
+    :param origin: wx.Point (x,y) Top left co-ordinate
+    :return: wx.Point: (x,y)
+    """
+    origin_x, origin_y = origin
+    size_x, size_y = size
+    centre_x = (size_x - origin_x) // 2
+    centre_y = (size_y - origin_y) // 2
+    return wx.Point(centre_x, centre_y)

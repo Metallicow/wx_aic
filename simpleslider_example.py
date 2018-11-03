@@ -26,10 +26,10 @@ class ICPanel(ImageControlPanel):
 
         top_sizer = wx.BoxSizer(wx.HORIZONTAL)
         top_sizer.Add((0, 0), 1, wx.EXPAND, 5)
-        self.Text1 = wx.StaticText(self, wx.ID_ANY, "Horizontal", wx.DefaultPosition, wx.Size(50,18), 0)
-        self.Text2 = wx.StaticText(self, wx.ID_ANY, "Vertical", wx.DefaultPosition, wx.Size(50,18), 0)
-        self.Text3 = wx.StaticText(self, wx.ID_ANY, "Vertical", wx.DefaultPosition, wx.Size(50,18), 0)
-        self.Text4 = wx.StaticText(self, wx.ID_ANY, "Horizontal", wx.DefaultPosition, wx.Size(50,18), 0)
+        self.Text1 = wx.StaticText(self, wx.ID_ANY, "Horizontal", wx.DefaultPosition, wx.Size(50, 18), 0)
+        self.Text2 = wx.StaticText(self, wx.ID_ANY, "Vertical", wx.DefaultPosition, wx.Size(50, 18), 0)
+        self.Text3 = wx.StaticText(self, wx.ID_ANY, "Vertical", wx.DefaultPosition, wx.Size(50, 18), 0)
+        self.Text4 = wx.StaticText(self, wx.ID_ANY, "Horizontal", wx.DefaultPosition, wx.Size(50, 18), 0)
         top_sizer.Add(self.Text2, 0, wx.ALL, 10)
         top_sizer.Add(self.Text3, 0, wx.ALL, 10)
         top_sizer.Add(self.Text1, 0, wx.ALL, 10)
@@ -45,11 +45,10 @@ class ICPanel(ImageControlPanel):
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1.png')),
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1_handle.png')))
         self.slide = SimpleSlider(self, slider_pair, max_pos=210)
-        self.slide.set_padding((60,30))
-        self.slide.set_offset((0,0))
+        self.slide.set_padding((50, 30))
+        self.slide.set_offset((0, 0))
         self.slide.set_default_value()
         self.slide.set_step(2, 4)
-        # self.slide.set_evt_on_animate()   # enable when threaded animation is used
         self.slide.set_highlighting()
         self.slide.highlight_box = ((0, 0), (20, 40))
         mid_sizer.Add(self.slide, 0, 0, 10)
@@ -59,9 +58,8 @@ class ICPanel(ImageControlPanel):
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1.png')),
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1_handle.png')))
         self.islide = SimpleSlider(self, slider_pair, is_inverted=True, max_pos=210)
-        self.islide.set_padding((50, 10,50,50))
-        # self.islide.set_offset((10, 9))
-        self.islide.set_default_value(1)
+        self.islide.set_padding((50, 10, 50, 10))
+        self.islide.set_default_value(210)
         self.islide.set_step(2, 4)
         self.islide.set_highlighting()
         self.islide.highlight_box = ((20, 0), (25, 40))
@@ -78,7 +76,7 @@ class ICPanel(ImageControlPanel):
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1_handle.png')))
         self.vslide = SimpleSlider(self, slider_pair, is_vertical=True, is_inverted=False, max_pos=210)
         self.vslide.set_padding((30, 40))
-        self.vslide.set_default_value(.25)
+        self.vslide.set_default_value(70)
         self.vslide.set_step(2, 4)
         self.vslide.set_highlighting()
         self.vslide.highlight_box = ((0, 0), (10, 10))
@@ -90,10 +88,8 @@ class ICPanel(ImageControlPanel):
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1_handle.png')))
         self.ivslide = SimpleSlider(self, slider_pair, is_vertical=True, is_inverted=True, max_pos=210)
         self.ivslide.set_padding((30, 40))
-        # self.ivslide.set_offset((0, 10))
         self.ivslide.set_step(2, 4)
-        self.ivslide.set_default_value(.5)
-        # self.ivslide.set_default_pos(10)
+        self.ivslide.set_default_value(105)
         self.ivslide.set_highlighting()
         self.ivslide.highlight_box = ((0, 0), (20, 20))
         bot_sizer.Add(self.ivslide, 0, 0, 10)
@@ -108,19 +104,19 @@ class ICPanel(ImageControlPanel):
         self.Layout()
 
     def on_slider_change(self, event):
-        self.Text1.SetLabel(str(int(event.value * 100)))
+        self.Text1.SetLabel(str(int(event.value)))
         event.Skip()
 
     def on_islider_change(self, event):
-        self.Text4.SetLabel(str(int(event.value * 100)))
+        self.Text4.SetLabel(str(int(event.value)))
         event.Skip()
 
     def on_vslider_change(self, event):
-        self.Text2.SetLabel(str(int(event.value * 100)))
+        self.Text2.SetLabel(str(int(event.value/2.10)))
         event.Skip()
 
     def on_ivslider_change(self, event):
-        self.Text3.SetLabel(str(int(event.value * 100)))
+        self.Text3.SetLabel(str(int(event.value/1.05)))
         event.Skip()
 
     def __del__(self):
