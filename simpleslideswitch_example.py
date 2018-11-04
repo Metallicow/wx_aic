@@ -56,7 +56,7 @@ class ICPanel(ImageControlPanel):
         slider_pair = (
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1.png')),
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1_handle.png')))
-        self.islide = SimpleSlideSwitch(self, slider_pair, is_inverted=True, switch_ticks=11, max_pos=210)
+        self.islide = SimpleSlideSwitch(self, slider_pair, switch_ticks=11, max_pos=210)
         self.islide.set_padding((60, 30))
         # self.islide.set_offset((10, 9))
         self.islide.set_step(1, 1)
@@ -74,7 +74,7 @@ class ICPanel(ImageControlPanel):
         slider_pair = (
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1v.png')),
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1_handle.png')))
-        self.vslide = SimpleSlideSwitch(self, slider_pair, True, is_inverted=False, switch_ticks=51, max_pos=210)
+        self.vslide = SimpleSlideSwitch(self, slider_pair, True, switch_ticks=51, max_pos=210)
         self.vslide.set_padding((30, 60))
         # self.vslide.set_offset((8, 10))
         self.vslide.set_default_tick(48)
@@ -87,7 +87,7 @@ class ICPanel(ImageControlPanel):
         slider_pair = (
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1v.png')),
             wx.Bitmap(os.path.join(RESOURCES, 'sticky_slide1_handle.png')))
-        self.ivslide = SimpleSlideSwitch(self, slider_pair, True, True, switch_ticks=101, max_pos=210)
+        self.ivslide = SimpleSlideSwitch(self, slider_pair, True, switch_ticks=101, max_pos=210)
         self.ivslide.set_padding((30, 60))
         # self.ivslide.set_offset((8, 10))
         self.ivslide.set_step(1, 1)
@@ -163,9 +163,9 @@ class StdPanel(wx.Panel):
         self.SetSizer(panel_sizer)
         self.Layout()
 
-        self.Bind(EVT_SSS_CHANGE, self.on_dial_change, id=self.slider.GetId())
+        self.Bind(EVT_SSS_CHANGE, self.on_slider_change, id=self.slider.GetId())
 
-    def on_dial_change(self, event):
+    def on_slider_change(self, event):
         self.Text1.SetLabel(str(event.state))
         event.Skip()
 

@@ -11,7 +11,7 @@ ss_cmd_event, EVT_SS_CHANGE = NewCommandEvent()
 
 class SimpleSlider(ActiveImageControl):
 
-    def __init__(self, parent, bitmaps, is_vertical=False, is_inverted=False, max_pos=None, *args, **kwargs):
+    def __init__(self, parent, bitmaps, is_vertical=False, max_pos=None, *args, **kwargs):
         """
         An Image Control for presenting a simple slider style
         It behaves similarly to a native control slider

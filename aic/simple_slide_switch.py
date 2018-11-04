@@ -12,7 +12,7 @@ sss_cmd_event, EVT_SSS_CHANGE = NewCommandEvent()
 
 class SimpleSlideSwitch(ActiveImageControl):
 
-    def __init__(self, parent, bitmaps, is_vertical=False, is_inverted=False,  max_pos=None, switch_ticks=2,
+    def __init__(self, parent, bitmaps, is_vertical=False, max_pos=None, switch_ticks=2,
                  *args, **kwargs):
         """
         An Image Control for presenting a simple multi-position slide switch
@@ -43,7 +43,6 @@ class SimpleSlideSwitch(ActiveImageControl):
 
         self.parent = parent
         self.vertical = is_vertical
-        self.inverted = is_inverted  # False for lt->rt & top->bot layouts; True for rt->lt & bot->top layouts
         self.static_bmp = bitmaps[0]
         self._static_size = self.static_bmp.Size
         self._static_padding = make_padding()
@@ -103,12 +102,12 @@ class SimpleSlideSwitch(ActiveImageControl):
             keycode = event.GetKeyCode()
 
             if keycode in [wx.WXK_RIGHT, wx.WXK_UP]:
-                if (self.inverted and not self.vertical) or (self.vertical and not self.inverted):
+                if self.vertical:
                     self.set_tick(self._curr_tick - self._cursor_key_step)
                 else:
                     self.set_tick(self._curr_tick + self._cursor_key_step)
             elif keycode in [wx.WXK_LEFT, wx.WXK_DOWN]:
-                if (self.inverted and not self.vertical) or (self.vertical and not self.inverted):
+                if self.vertical:
                     self.set_tick(self._curr_tick + self._cursor_key_step)
                 else:
                     self.set_tick(self._curr_tick - self._cursor_key_step)
@@ -127,7 +126,7 @@ class SimpleSlideSwitch(ActiveImageControl):
             if self._evt_on_focus:
                 self._send_event()
         delta = event.GetWheelDelta()  # usually +/-120, but it's better not to assume
-        if (self.inverted and not self.vertical) or (self.vertical and not self.inverted):
+        if self.vertical:
             self.set_tick(self._curr_tick - self._scroll_wheel_step * event.GetWheelRotation() // delta)
         else:
             self.set_tick(self._curr_tick + self._scroll_wheel_step * event.GetWheelRotation() // delta)
@@ -149,8 +148,6 @@ class SimpleSlideSwitch(ActiveImageControl):
         index = self.vertical
         position = mouse_pos[index] - self._handle_centre[index] - self._static_padding[3 - (3 * index)]
         closest_tick = min(range(len(self._ticklist)), key=lambda i: abs(self._ticklist[i] - position))
-        if self.inverted:
-            closest_tick = len(self._ticklist) - closest_tick - 1
         self.set_tick(closest_tick)
 
     def on_middle_up(self, _):
@@ -182,10 +179,13 @@ class SimpleSlideSwitch(ActiveImageControl):
         return tick_list
 
     # Getters and Setters #
-    def set_padding(self, pad=(0, 0, 0, 0)):
-        """ Apply additional padding around the static image, mouse events will extend into the padding """
-        self._static_padding = make_padding(pad)
-        self._static_pos = self._get_static_point()
+    def _set_max(self, pos):
+        """ Set the maximum pixel position value for the handle """
+        index = self.vertical
+        if pos:
+            if 0 <= pos <= self._static_size[index]:
+                return pos
+        return self._static_size[index]
 
     def _get_static_point(self):
         """ Returns the point at the top left of the foundation image """
@@ -194,19 +194,19 @@ class SimpleSlideSwitch(ActiveImageControl):
         point = (winx + padx, winy + pady)
         return point
 
+    def set_padding(self, pad=(0, 0, 0, 0)):
+        """ Apply additional padding around the static image, mouse events will extend into the padding """
+        self._static_padding = make_padding(pad)
+        self._static_pos = self._get_static_point()
+
     def get_handle_point(self):
         x_base = self._static_pos[0] + self._handle_offset[0]
         y_base = self._static_pos[1] + self._handle_offset[1]
-        if self.inverted:
-            if self.vertical:
-                return x_base, self._handle_max_pos - self._handle_pos + y_base
-            else:
-                return self._handle_max_pos - self._handle_pos + x_base, y_base
+
+        if self.vertical:
+            return x_base, self._handle_pos + y_base
         else:
-            if self.vertical:
-                return x_base, self._handle_pos + y_base
-            else:
-                return self._handle_pos + x_base, y_base
+            return self._handle_pos + x_base, y_base
 
     def set_default_tick(self, tick=0):
         """ Set the default tick position for the handle, resetting will place the handle at this point"""
@@ -216,14 +216,6 @@ class SimpleSlideSwitch(ActiveImageControl):
             self._handle_default = self._handle_pos  # TODO not sure if this is needed any more
         else:
             raise ValueError('The tick value is not within range')
-
-    def _set_max(self, pos):
-        """ Set the maximum pixel position value for the handle """
-        index = self.vertical
-        if pos:
-            if 0 <= pos <= self._static_size[index]:
-                return pos
-        return self._static_size[index]
 
     def set_offset(self, point=(0, 0)):
         """ Set the offset for the handle: x,y co-ordinates relative to the top left corner of the foundation image """
@@ -252,7 +244,6 @@ class SimpleSlideSwitch(ActiveImageControl):
         if tick != self._curr_tick:
             self._curr_tick = tick
             self.set_position(self._ticklist[tick])
-            # wx.PostEvent(self, sss_cmd_event(id=self.GetId(), value=self.value))
             self.Refresh(True)
 
     def set_position(self, pos=0):
@@ -297,7 +288,8 @@ class SimpleSlideSwitch(ActiveImageControl):
         self.set_tick(self._tick_default)
 
     # Helper methods #
-    def _validate_limits(self, position, max_pos):
+    @staticmethod
+    def _validate_limits(position, max_pos):
         """ Validate a position value, correcting the value if it exceeds lower or upper parameters """
         if position > max_pos:
             return max_pos
@@ -305,7 +297,8 @@ class SimpleSlideSwitch(ActiveImageControl):
             return 0
         return position
 
-    def _within_boundary(self,point, boundary):
+    @staticmethod
+    def _within_boundary(point, boundary):
         """ checks that a point is within the boundary of the foundation image """
         if (0 <= point[0] <= boundary[0]) and (0 <= point[1] <= boundary[1]):
             return True
