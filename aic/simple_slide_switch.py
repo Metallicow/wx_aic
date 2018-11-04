@@ -23,10 +23,6 @@ class SimpleSlideSwitch(ActiveImageControl):
                         (the second will be the handle (pointer), preferably smaller than the static bitmap
                         If the handle is larger, you may need to compensate by adding padding to the slider
         :param is_vertical: Boolean - does the slider operate in a vertical orientation
-        :param is_inverted: Boolean - does the slider operate contra to the co-ordinate system
-                            Put simply:
-                                on a horizontal slider- True if the right-most position has a zero value
-                                on a vertical slider- True if the bottom-most position has a zero value
         :param max_pos: Int - maximum limit of handle movement, pixel position relative to the zero position
                                 in other words, the usable axis length (in pixels)
         :param switch_ticks:    an integer (>=2) which will spread the ticks evenly across the range
