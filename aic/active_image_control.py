@@ -5,7 +5,7 @@ class ActiveImageControl(wx.Control):
     """ A sub-classed Control utilising images to behave as controls """
 
     def __init__(self, parent, *args, **kwargs):
-        super().__init__(parent, *args, **kwargs)
+        super(ActiveImageControl, self).__init__(parent, *args, **kwargs)
 
         self.highlight = False
 

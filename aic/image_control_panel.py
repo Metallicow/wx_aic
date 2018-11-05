@@ -9,7 +9,7 @@ class ImageControlPanel(wx.Panel):
     """
 
     def __init__(self, parent, bg_bitmap, tiled=False, *args, **kw):
-        super().__init__(parent, *args, **kw)
+        super(ImageControlPanel, self).__init__(parent, *args, **kw)
         self.parent = parent
         self.bg_bitmap = bg_bitmap
         self.tiled_bg = tiled

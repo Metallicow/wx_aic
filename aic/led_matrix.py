@@ -18,7 +18,7 @@ class LedMatrix(ActiveImageControl):
     """
 
     def __init__(self, parent, bitmaps, dimension=(1, 1), *args, **kwargs):
-        super().__init__(parent, *args, **kwargs)
+        super(LedMatrix, self).__init__(parent, *args, **kwargs)
 
         self.SetWindowStyleFlag(wx.NO_BORDER)
 

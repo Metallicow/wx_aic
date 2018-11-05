@@ -33,7 +33,7 @@ class RangeSlider(ActiveImageControl):
                                                                     percentage of the slider range
         """
 
-        super().__init__(parent, *args, **kwargs)
+        super(RangeSlider, self).__init__(parent, *args, **kwargs)
         # Wants Chars used so that we can grab (cursor) key input
         # self.SetWindowStyleFlag(wx.WANTS_CHARS)
         self.SetWindowStyleFlag(wx.NO_BORDER | wx.WANTS_CHARS)

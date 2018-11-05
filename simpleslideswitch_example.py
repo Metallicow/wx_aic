@@ -9,8 +9,8 @@ RESOURCES = 'res'
 
 
 class ICPanel(ImageControlPanel):
-    def __init__(self, parent, bmp, *args, tiled=False, **kwargs):
-        super().__init__(parent, bmp, *args, tiled, **kwargs)
+    def __init__(self, parent, bmp, tiled=False, *args, **kwargs):
+        super(ICPanel, self).__init__(parent, bmp, tiled, *args, **kwargs)
 
         self._populate()
 
@@ -129,7 +129,7 @@ class StdPanel(wx.Panel):
 
     def __init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.Size(1024, 768), style=wx.TAB_TRAVERSAL,
                  name=wx.EmptyString):
-        super().__init__(parent, id=id, pos=pos, size=size, style=style, name=name)
+        super(StdPanel, self).__init__(parent, id=id, pos=pos, size=size, style=style, name=name)
 
         self._populate()
 
@@ -176,7 +176,7 @@ class StdPanel(wx.Panel):
 class StdFrame(wx.Frame):
 
     def __init__(self, parent):
-        super().__init__(parent, id=wx.ID_ANY, title="Example wxFrame", pos=wx.DefaultPosition, size=wx.Size(1024, 768),
+        super(StdFrame, self).__init__(parent, id=wx.ID_ANY, title="Example wxFrame", pos=wx.DefaultPosition, size=wx.Size(1024, 768),
                          style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
         # self.SetSizeHints(wx.DefaultSize, wx.DefaultSize)
 
@@ -213,7 +213,7 @@ class ICFrame(ImageControlFrame):
     bmp = (os.path.join(RESOURCES, 'led1rect_active_dark.png'))
 
     def __init__(self, parent, resizable=True, bitmap=bmp, tiled=True):
-        super().__init__(parent, resizable=resizable, bitmap=bitmap, tiled=tiled, id=wx.ID_ANY, title="Example ICFrame",
+        super(ICFrame, self).__init__(parent, resizable=resizable, bitmap=bitmap, tiled=tiled, id=wx.ID_ANY, title="Example ICFrame",
                          pos=wx.DefaultPosition, size=wx.Size(1024, 768), style=wx.DEFAULT_FRAME_STYLE)
         # self.SetSizeHints(wx.Size(1024, 768), wx.DefaultSize, wx.DefaultSize)  # Minimum size
 

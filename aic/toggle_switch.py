@@ -14,7 +14,7 @@ class ToggleSwitch(ActiveImageControl):
                         The  bitmap in (0) position is treated as the default (OFF) base bitmap
         """
         # TODO option to rebind mouse to different functions eg wx.EVT_RIGHT_UP  to toggle state?
-        super().__init__(parent, *args, **kwargs)
+        super(ToggleSwitch, self).__init__(parent, *args, **kwargs)
 
         self.SetWindowStyleFlag(wx.NO_BORDER | wx.WANTS_CHARS)
 

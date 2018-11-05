@@ -31,7 +31,7 @@ class RotaryDial(ActiveImageControl):
                                                              6 0'clock, .value will return: 270 (degrees)
         """
 
-        super().__init__(parent, *args, **kwargs)
+        super(RotaryDial, self).__init__(parent, *args, **kwargs)
         # No borders + Wants Chars - to grab (cursor) key input
         self.SetWindowStyleFlag(wx.NO_BORDER | wx.WANTS_CHARS)
 

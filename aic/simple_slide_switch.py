@@ -33,7 +33,7 @@ class SimpleSlideSwitch(ActiveImageControl):
         EVT_SSS_CHANGE: returns .value: int -> the (zero based) index of the selected switch position
         """
 
-        super().__init__(parent, *args, **kwargs)
+        super(SimpleSlideSwitch, self).__init__(parent, *args, **kwargs)
         # No borders + Wants Chars - to grab (cursor) key input
         self.SetWindowStyleFlag(wx.NO_BORDER | wx.WANTS_CHARS)
 
@@ -163,7 +163,7 @@ class SimpleSlideSwitch(ActiveImageControl):
                     tick = int(t * max_ / (ticks - 1))
                     tick_list.append(tick)
             else:
-                raise ValueError(f'switch_ticks: Expected a value from 2 - {max_}')
+                raise ValueError('switch_ticks: Expected a value from 2 - {max_}')
         else:
             if len(ticks) > 1:  # otherwise assume that an iterable of integers is passed
                 # print(f'found {len(ticks)} ticks')
@@ -171,7 +171,7 @@ class SimpleSlideSwitch(ActiveImageControl):
                 for tick in ticks:
                     tick_list.append(int(tick * max_))  # horizontal
             else:
-                raise IndexError(f'switch_ticks: Expected 2 or more ticks')
+                raise IndexError('switch_ticks: Expected 2 or more ticks')
         return tick_list
 
     # Getters and Setters #

@@ -16,7 +16,7 @@ class LedArray(ActiveImageControl):
     """
 
     def __init__(self, parent, bitmaps, colours=(wx.GREEN,), *args, **kwargs):
-        super().__init__(parent, *args, **kwargs)
+        super(LedArray, self).__init__(parent, *args, **kwargs)
 
         self.SetWindowStyleFlag(wx.NO_BORDER)
 

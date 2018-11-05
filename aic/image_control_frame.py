@@ -9,7 +9,7 @@ class ImageControlFrame(wx.Frame):
     """
 
     def __init__(self, parent, bitmap=wx.EmptyBitmap, tiled=False, resizable=True, *args, **kwargs):
-        super().__init__(parent, *args, **kwargs)
+        super(ImageControlFrame, self).__init__(parent, *args, **kwargs)
 
         if not resizable:
             self.SetWindowStyle(wx.DEFAULT_FRAME_STYLE & ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX))

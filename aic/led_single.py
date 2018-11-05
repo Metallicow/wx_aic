@@ -13,7 +13,7 @@ class LedSingle(ActiveImageControl):
     """
 
     def __init__(self, parent, bitmaps, *args, **kwargs):
-        super().__init__(parent, *args, **kwargs)
+        super(LedSingle, self).__init__(parent, *args, **kwargs)
 
         self.SetWindowStyleFlag(wx.NO_BORDER)
 

@@ -26,7 +26,7 @@ class RotarySwitch(ActiveImageControl):
                         It might be possible to do a partially exposed knob using a mask???
         """
 
-        super().__init__(parent, *args, **kwargs)
+        super(RotarySwitch, self).__init__(parent, *args, **kwargs)
         # No borders, yuk!  Wants Chars - to grab (cursor) key input
         self.SetWindowStyleFlag(wx.NO_BORDER | wx.WANTS_CHARS)
 

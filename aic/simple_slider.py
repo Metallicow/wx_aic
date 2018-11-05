@@ -31,7 +31,7 @@ class SimpleSlider(ActiveImageControl):
         EVT_SS_CHANGE: returns .value: float (0-1) -> the position of the handle as a percentage of the slider range
         """
 
-        super().__init__(parent, *args, **kwargs)
+        super(SimpleSlider, self).__init__(parent, *args, **kwargs)
         # Wants Chars used so that we can grab (cursor) key input
         # self.SetWindowStyleFlag(wx.WANTS_CHARS)
         self.SetWindowStyleFlag(wx.NO_BORDER | wx.WANTS_CHARS)
