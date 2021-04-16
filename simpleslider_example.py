@@ -11,8 +11,8 @@ RESOURCES = 'res'
 
 
 class ICPanel(ImageControlPanel):
-    def __init__(self, parent, bmp, *args, tiled=False, **kwargs):
-        super().__init__(parent, bmp, *args, tiled, **kwargs)
+    def __init__(self, parent, bmp, tiled=False, *args, **kwargs):
+        super().__init__(parent, bmp, tiled, *args, **kwargs)
 
         self._populate()
 

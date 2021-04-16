@@ -11,11 +11,11 @@ class Padding:
                                 Top; Right; Bottom; Left - mimics the common CSS pattern
     """
 
-    def __init__(self, widths: tuple = (0, 0, 0, 0)):
-        self.padding = make_padding(widths)
+    def __init__(self, widths=tuple( (0, 0, 0, 0) )):
+        Self.padding = make_padding(widths)
 
 
-def make_padding(widths: tuple = (0, 0, 0, 0)):
+def make_padding(widths=tuple( (0, 0, 0, 0) )):
     """ returns a tuple of 4 integers representing the amount of padding-> Top; Right; Bottom; Left """
     length = len(widths)
     if length < 5:
